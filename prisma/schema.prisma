@@ -1,0 +1,234 @@
+// NM Tax Appeals — data model
+// SQLite for local dev; swap `provider` to "postgresql" when deployed.
+// Note: SQLite has no native enums/arrays. String fields use documented
+// allowed values, validated in code (see src/lib/enums.ts). List fields
+// (e.g. `grounds`) are stored as JSON strings.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A homeowner who wants to appeal. The paying customer.
+model Client {
+  id             String   @id @default(cuid())
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  mailingAddress String?
+  /// IP captured when the client submitted intake (audit trail).
+  signupIp       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  properties  Property[]
+  cases       Case[]
+  agreements  EngagementAgreement[]
+}
+
+/// A parcel. Maps to a row on the engagement's Schedule A.
+model Property {
+  id             String  @id @default(cuid())
+  clientId       String
+  client         Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  /// County slug, e.g. "bernalillo". See src/lib/nm/counties.ts.
+  countyId       String
+  /// Property (situs) address.
+  situsAddress   String
+  /// Owner name as it appears on the assessor record (for Schedule A).
+  ownerName      String
+  /// Bernalillo "Uniform Property Code" / parcel id, if known.
+  upc            String?
+  /// e.g. "residential". Owner-occupied residential is v1's focus.
+  propertyClass  String  @default("residential")
+  yearBuilt      Int?
+  squareFeet     Int?
+  /// Whole dollars.
+  purchasePrice  Int?
+  purchaseDate   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  notices NoticeOfValue[]
+  cases   Case[]
+}
+
+/// The assessor's annual Notice of Value. Its mailing date starts the
+/// 30-day protest clock under NMSA 1978 § 7-38-24.
+model NoticeOfValue {
+  id             String   @id @default(cuid())
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  taxYear        Int
+  /// Full (market) value on the NOV, whole dollars.
+  fullValue      Int
+  landValue      Int?
+  improvementValue Int?
+  /// Date the assessor mailed the NOV (per statute, drives the deadline).
+  mailingDate    DateTime?
+  /// Protest deadline: the date printed on the NOV, or mailingDate + 30 days.
+  protestDeadline DateTime
+  createdAt      DateTime @default(now())
+
+  cases Case[]
+}
+
+/// A protest of one property's value for one tax year — the unit of work.
+model Case {
+  id             String   @id @default(cuid())
+  clientId       String
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  noticeId       String?
+  notice         NoticeOfValue? @relation(fields: [noticeId], references: [id])
+  agreementId    String?
+  agreement      EngagementAgreement? @relation(fields: [agreementId], references: [id])
+
+  countyId       String
+  taxYear        Int
+  /// See CASE_STATUSES in src/lib/enums.ts.
+  status         String   @default("intake")
+  /// JSON array of ground slugs, e.g. ["over_valuation","missing_exemption"].
+  grounds        String   @default("[]")
+  protestDeadline DateTime
+
+  /// Snapshot of assessed value we're protesting (whole dollars).
+  initialAssessedValue Int?
+  /// Operator's opinion of correct value (whole dollars).
+  targetValue          Int?
+  /// Final value after resolution (whole dollars).
+  finalAssessedValue   Int?
+  /// Effective mill rate used for savings math (per $1,000 net taxable).
+  millRate       Float?
+
+  assignedTo     String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  evidence Evidence[]
+  filing   Filing?
+
+  @@index([status])
+  @@index([protestDeadline])
+}
+
+/// The Property Tax Services Agreement (contingency engagement).
+model EngagementAgreement {
+  id             String   @id @default(cuid())
+  clientId       String
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  taxYear        Int
+  /// Contingency fee percent (default 30).
+  feePercent               Int @default(30)
+  /// Extra points if it goes to arbitration/litigation (default 10).
+  arbitrationUpliftPercent Int @default(10)
+
+  /// "mock" | "docusign".
+  provider       String   @default("mock")
+  /// See AGREEMENT_STATUSES in src/lib/enums.ts.
+  status         String   @default("draft")
+  /// DocuSign envelope id (or mock id).
+  envelopeId     String?
+  /// IP captured at signing (from provider certificate of completion).
+  signerIp       String?
+  /// IP we captured when the envelope was requested (belt-and-suspenders).
+  requestIp      String?
+  /// Path to the stored executed PDF.
+  executedPdfPath String?
+
+  effectiveDate  DateTime?
+  autoRenew      Boolean  @default(true)
+  /// Renewal cancellation deadline (March 1 of the following year).
+  cancelByDate   DateTime?
+
+  sentAt         DateTime?
+  viewedAt       DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  cases     Case[]
+  documents SignedDocument[]
+}
+
+/// One document within an engagement's signing packet. Every Bernalillo
+/// homeowner signs at least two: the services agreement and the county
+/// Agent Authorization. Other counties (e.g. Santa Fe) add their own forms
+/// here without schema changes.
+model SignedDocument {
+  id          String   @id @default(cuid())
+  agreementId String
+  agreement   EngagementAgreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  /// "services_agreement" | "agent_authorization" | "protest_form" | ...
+  kind        String
+  name        String
+  /// Rendered HTML snapshot at send time.
+  html        String
+  /// Display / signing order.
+  order       Int      @default(0)
+  /// Link to the official source form this document is based on, if any.
+  sourceUrl   String?
+  createdAt   DateTime @default(now())
+
+  @@index([agreementId])
+}
+
+/// A piece of evidence attached to a case (comp, photo, note, doc).
+model Evidence {
+  id          String   @id @default(cuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  /// "comp" | "photo" | "appraisal" | "condition_note" | "document".
+  kind        String
+  label       String
+  description String?
+  /// For comps: sale price (whole dollars).
+  value       Int?
+  /// JSON blob for structured data (comp address, sale date, sqft, ...).
+  data        String?
+  filePath    String?
+  createdAt   DateTime @default(now())
+}
+
+/// The filed protest and its result. One per case in v1.
+model Filing {
+  id                 String   @id @default(cuid())
+  caseId             String   @unique
+  case               Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  /// "in_person" | "mail" | "online".
+  method             String   @default("mail")
+  /// Snapshot of the generated petition text at filing time.
+  petitionText       String?
+  filedAt            DateTime?
+  confirmationNumber String?
+  /// Value offered by the assessor during informal negotiation.
+  informalOfferValue Int?
+  hearingDate        DateTime?
+  /// See FILING_OUTCOMES in src/lib/enums.ts.
+  outcome            String   @default("pending")
+  finalValue         Int?
+  decidedAt          DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+/// Immutable audit trail (signing IP, status changes, etc.).
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  ip         String?
+  /// JSON metadata.
+  meta       String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
