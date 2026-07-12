@@ -46,6 +46,10 @@ export const bernalillo: County = {
         label: "Arbitration Certificate for Property Tax Refund (fillable)",
         url: "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2025/12/Arbitration_Certificate_Property_Tax_Refund-Fillable.pdf",
       },
+      // VERIFY: Two additional refund forms exist but no official URLs are
+      // confirmed — "Summons for Property Tax Refund" and "Request for
+      // Interpreter". Do NOT add to forms[] until real URLs are verified
+      // (FormLink requires a url). Mentioned in county notes below.
     ],
     selfHelp:
       "Second Judicial District Court Self-Help Center: (505) 841-6702 · albdselfhelp@nmcourts.gov",
@@ -61,7 +65,35 @@ export const bernalillo: County = {
       "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/04/2026_Protest_Form-0409.pdf",
     residentialInfoUrl:
       "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/03/Residential-Property-Owners-03-2026-FW-FRONT.pdf",
+    // Verified via search index (2026-07): Spanish 2026 Valuation Protest Pamphlet.
+    pamphletSpanishUrl:
+      "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/03/Protest-Pamphlet-2026-Spanish-revised-3-2026.pdf",
+    // VERIFY: English 2026 Valuation Protest Pamphlet URL not confirmed.
+    // bernco.gov returns 403 to automated fetches and search did not surface a
+    // verified English 2026 URL (only the 2025 pamphlet). Do not invent —
+    // populate pamphletUrl only once the real URL is verified.
   },
+  specialDeadlines: [
+    {
+      label: "Business Personal Property (BPP) protests",
+      note: "May 1 – June 1 (separate from the residential 30-day NOV window).",
+    },
+    {
+      label: "Manufactured (mobile) home protests",
+      note: "May 1 – June 1 (separate from the residential 30-day NOV window).",
+    },
+    {
+      label: "Livestock protests",
+      note: "May 1 – June 1 (separate from the residential 30-day NOV window).",
+    },
+    {
+      label:
+        "Tax-saving programs (exemptions, valuation freeze / limitation on increase, special method of valuation)",
+      note: "No protest form required to apply; deadline is 30 days after the NOV mailing date.",
+    },
+  ],
   notes:
-    "Notice of Value typically mailed on/before April 1; protest due within 30 days of the mailing date printed on the NOV.",
+    "Notice of Value typically mailed on/before April 1; protest due within 30 days of the mailing date printed on the NOV. " +
+    "Two additional District Court refund forms exist — 'Summons for Property Tax Refund' and 'Request for Interpreter' — " +
+    "but no verified official URLs are available, so they are not linked here (obtain from the Second Judicial District Court or the Assessor).",
 };
