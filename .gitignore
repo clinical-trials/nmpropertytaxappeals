@@ -21,3 +21,6 @@
 *.pem
 npm-debug.log*
 next-env.d.ts
+
+# typescript incremental build info
+tsconfig.tsbuildinfo
