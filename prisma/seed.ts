@@ -177,7 +177,104 @@ async function main() {
     },
   });
 
-  console.log("Seeded 2 clients, 2 properties, 2 cases.");
+  // --- Case 3: Santa Fe County protest ---
+  const sf = getCounty("santa_fe");
+  const c3 = await db.client.create({
+    data: {
+      firstName: "Miguel",
+      lastName: "Romero",
+      email: "miguel.romero@example.com",
+      phone: "(505) 555-0121",
+      mailingAddress: "1420 Cerro Gordo Rd, Santa Fe, NM 87501",
+      signupIp: "70.88.12.4",
+    },
+  });
+  const p3 = await db.property.create({
+    data: {
+      clientId: c3.id,
+      countyId: "santa_fe",
+      situsAddress: "1420 Cerro Gordo Rd, Santa Fe, NM 87501",
+      ownerName: "Miguel Romero",
+      propertyClass: "residential",
+      yearBuilt: 1951,
+      squareFeet: 1720,
+      purchasePrice: 540000,
+      purchaseDate: new Date(taxYear - 1, 4, 20),
+    },
+  });
+  const nov3 = await db.noticeOfValue.create({
+    data: {
+      propertyId: p3.id,
+      taxYear,
+      fullValue: 615000,
+      mailingDate: mailed,
+      protestDeadline: deadline,
+    },
+  });
+  await db.case.create({
+    data: {
+      clientId: c3.id,
+      propertyId: p3.id,
+      noticeId: nov3.id,
+      countyId: "santa_fe",
+      taxYear,
+      caseType: "protest",
+      status: "intake",
+      grounds: JSON.stringify(["over_valuation"]),
+      protestDeadline: deadline,
+      initialAssessedValue: 615000,
+      millRate: sf?.defaultMillRate ?? 30,
+      notes: "Santa Fe. Bought last spring at $540k; NOV $615k.",
+    },
+  });
+
+  // --- Case 4: Bernalillo missed-deadline claim for refund ---
+  const pastDeadline = new Date(taxYear, 3, 1); // deadline already passed
+  const c4 = await db.client.create({
+    data: {
+      firstName: "Alice",
+      lastName: "Nakai",
+      email: "alice.nakai@example.com",
+      mailingAddress: "3312 Morris St NE, Albuquerque, NM 87111",
+      signupIp: "97.120.4.55",
+    },
+  });
+  const p4 = await db.property.create({
+    data: {
+      clientId: c4.id,
+      countyId: "bernalillo",
+      situsAddress: "3312 Morris St NE, Albuquerque, NM 87111",
+      ownerName: "Alice Nakai",
+      propertyClass: "residential",
+    },
+  });
+  const nov4 = await db.noticeOfValue.create({
+    data: {
+      propertyId: p4.id,
+      taxYear,
+      fullValue: 388000,
+      mailingDate: new Date(taxYear, 2, 1),
+      protestDeadline: pastDeadline,
+    },
+  });
+  await db.case.create({
+    data: {
+      clientId: c4.id,
+      propertyId: p4.id,
+      noticeId: nov4.id,
+      countyId: "bernalillo",
+      taxYear,
+      caseType: "refund_claim",
+      status: "intake",
+      grounds: JSON.stringify(["over_valuation"]),
+      protestDeadline: pastDeadline,
+      initialAssessedValue: 388000,
+      millRate: 40,
+      notes: "Missed 30-day window. Claim for refund path (District Court, Jan 10). Confirm first-half payment is current.",
+    },
+  });
+
+  console.log("Seeded 4 clients, 4 properties, 4 cases (2 Bernalillo, 1 Santa Fe, 1 refund claim).");
 }
 
 main()

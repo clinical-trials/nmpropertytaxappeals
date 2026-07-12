@@ -26,6 +26,7 @@ type Form = {
   qualifiesHeadOfFamily: boolean;
   qualifiesVeteran: boolean;
   qualifiesDisabledVeteran: boolean;
+  qualifiesValuationFreeze: boolean;
   claimsExemptionAlready: boolean;
   firstName: string;
   lastName: string;
@@ -53,6 +54,7 @@ const EMPTY: Form = {
   qualifiesHeadOfFamily: false,
   qualifiesVeteran: false,
   qualifiesDisabledVeteran: false,
+  qualifiesValuationFreeze: false,
   claimsExemptionAlready: false,
   firstName: "",
   lastName: "",
@@ -126,6 +128,7 @@ export default function IntakePage() {
         qualifiesHeadOfFamily: f.qualifiesHeadOfFamily,
         qualifiesVeteran: f.qualifiesVeteran,
         qualifiesDisabledVeteran: f.qualifiesDisabledVeteran,
+        qualifiesValuationFreeze: f.qualifiesValuationFreeze,
         claimsExemptionAlready: f.claimsExemptionAlready,
       };
       const res = await fetch("/api/intake", {
@@ -400,29 +403,39 @@ export default function IntakePage() {
 
           {step === 3 && (
             <Section
-              title="Exemptions"
-              hint="Some homeowners are entitled to reductions they never claimed."
+              title="Tax-saving programs"
+              hint="These can cut your bill and are often left unclaimed. Check any that apply — we'll make sure they're captured."
             >
+              <div className="space-y-3 rounded-xl border border-clay/30 bg-clay/5 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-clay">
+                  Worth checking — real money
+                </p>
+                <Check
+                  checked={f.qualifiesVeteran}
+                  onChange={(v) => set("qualifiesVeteran", v)}
+                  label="Veteran's exemption — I'm a veteran or surviving spouse"
+                />
+                <Check
+                  checked={f.qualifiesDisabledVeteran}
+                  onChange={(v) => set("qualifiesDisabledVeteran", v)}
+                  label="Disabled veteran exemption — 100% service-connected disability"
+                />
+                <Check
+                  checked={f.qualifiesValuationFreeze}
+                  onChange={(v) => set("qualifiesValuationFreeze", v)}
+                  label="Valuation freeze — I'm 65 or older (or disabled) and income-qualified"
+                />
+              </div>
               <Check
                 checked={f.qualifiesHeadOfFamily}
                 onChange={(v) => set("qualifiesHeadOfFamily", v)}
-                label="I'm a New Mexico resident and head of my household"
-              />
-              <Check
-                checked={f.qualifiesVeteran}
-                onChange={(v) => set("qualifiesVeteran", v)}
-                label="I'm a veteran (or surviving spouse of one)"
-              />
-              <Check
-                checked={f.qualifiesDisabledVeteran}
-                onChange={(v) => set("qualifiesDisabledVeteran", v)}
-                label="I'm a 100% service-connected disabled veteran"
+                label="Head of family — NM resident and head of my household"
               />
               <div className="my-2 border-t border-ink/10" />
               <Check
                 checked={f.claimsExemptionAlready}
                 onChange={(v) => set("claimsExemptionAlready", v)}
-                label="These exemptions are already on my tax bill"
+                label="These are already on my tax bill"
               />
             </Section>
           )}
@@ -520,7 +533,13 @@ function ResultView({
   submitting: boolean;
   error: string | null;
 }) {
-  const passed = eligibility.recommendation !== "deadline_passed";
+  const isRefund = eligibility.track === "refund_claim";
+  const refundActionable =
+    isRefund &&
+    !!eligibility.refundClaimDeadline &&
+    new Date(eligibility.refundClaimDeadline) >= new Date();
+  const canProceed =
+    eligibility.recommendation !== "deadline_passed" || refundActionable;
   return (
     <div className="card p-8">
       <span
@@ -529,14 +548,18 @@ function ResultView({
             ? "bg-green-100 text-green-800"
             : eligibility.recommendation === "needs_review"
               ? "bg-sky/10 text-sky"
-              : "bg-red-100 text-red-700"
+              : refundActionable
+                ? "bg-amber-100 text-amber-800"
+                : "bg-red-100 text-red-700"
         }`}
       >
         {eligibility.recommendation === "worth_pursuing"
           ? "Looks worth pursuing"
           : eligibility.recommendation === "needs_review"
             ? "We'll review it closely"
-            : "Deadline may have passed"}
+            : refundActionable
+              ? "Missed the protest window — refund claim possible"
+              : "Deadline may have passed"}
       </span>
       <h1 className="mt-4 font-display text-2xl text-ink">
         Here&apos;s our first read
@@ -567,6 +590,19 @@ function ResultView({
         </div>
       )}
 
+      {isRefund && refundActionable && (
+        <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-ink-soft">
+          <p className="font-medium text-ink">Claim for refund (District Court)</p>
+          <p className="mt-1">
+            The 30-day protest window has closed, but you can still challenge the
+            value with a claim for refund — filed until{" "}
+            <strong className="text-ink">January 10</strong>. Your first-half tax
+            payment must be current. If we take it on, we handle the court
+            filing.
+          </p>
+        </div>
+      )}
+
       <div className="mt-6 rounded-xl border border-ink/10 bg-white p-4 text-sm text-ink-soft">
         This is an automated first read, not a valuation or a promise. A person
         reviews every case before we file anything.
@@ -578,13 +614,17 @@ function ResultView({
         </p>
       )}
 
-      {passed && (
+      {canProceed && (
         <button
           className="btn-primary mt-6 w-full py-3 text-base"
           onClick={onProceed}
           disabled={submitting}
         >
-          {submitting ? "Preparing your agreement…" : "Review & sign the agreement"}
+          {submitting
+            ? "Preparing your agreement…"
+            : isRefund
+              ? "Review & sign to start my refund claim"
+              : "Review & sign the agreement"}
         </button>
       )}
       <p className="mt-3 text-center text-xs text-ink-faint">

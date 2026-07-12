@@ -1,25 +1,40 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getCounty } from "@/lib/nm/counties";
+import { getCounty, supportedCounties } from "@/lib/nm/counties";
 
 export const metadata = {
-  title: "Bernalillo County protest resources — NM Tax Appeals",
+  title: "New Mexico property tax protest resources — NM Tax Appeals",
 };
 
+function FormLink({ url, label }: { url: string; label: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-clay hover:text-clay-dark"
+    >
+      {label} ↗
+    </a>
+  );
+}
+
 export default function Resources() {
-  const county = getCounty("bernalillo");
-  const forms = county?.forms;
+  const counties = supportedCounties();
+  const bern = getCounty("bernalillo");
+  const refund = bern?.refundClaim;
 
   return (
     <div>
       <SiteHeader />
       <div className="mx-auto max-w-2xl px-6 py-12">
         <h1 className="font-display text-3xl text-ink">
-          Bernalillo County property tax protests
+          New Mexico property tax protests
         </h1>
         <p className="mt-2 text-ink-soft">
-          The essentials, drawn from New Mexico statute. This is general
-          information, not legal advice.
+          The essentials, drawn from New Mexico statute. We currently serve{" "}
+          {counties.map((c) => c.name).join(" and ")}. General information, not
+          legal advice.
         </p>
 
         {/* Process */}
@@ -42,9 +57,8 @@ export default function Resources() {
             </li>
             <li>
               <strong className="text-ink">A hearing is scheduled.</strong> The
-              assessor sets a hearing before the Bernalillo County Valuation
-              Protests Board and notifies you by certified mail at least 15 days
-              beforehand.
+              assessor sets a hearing before the county valuation protests board
+              and notifies you by certified mail at least 15 days beforehand.
             </li>
             <li>
               <strong className="text-ink">An informal conference</strong> with
@@ -53,108 +67,107 @@ export default function Resources() {
           </ul>
         </section>
 
-        {/* What can lower a value */}
+        {/* Tax-saving programs */}
         <section className="mt-10">
           <h2 className="font-display text-xl text-ink">
-            What can bring a value down
+            Tax-saving programs (often unclaimed)
           </h2>
           <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink-soft">
             <li>
-              <strong className="text-ink">Comparable sales.</strong> Recent
-              sales of similar nearby homes — especially your own recent purchase
-              — are strong evidence of market value.
+              <strong className="text-ink">Veteran&apos;s exemption</strong> and{" "}
+              <strong className="text-ink">disabled veteran exemption</strong>{" "}
+              (100% service-connected) reduce taxable value — the disabled-veteran
+              exemption can remove it entirely on a primary residence.
             </li>
             <li>
-              <strong className="text-ink">The 3% residential cap.</strong> For
-              most owner-occupied homes, the taxable value can&apos;t rise more
-              than 3% year over year (NMSA § 7-36-21.2). Exceptions include new
-              construction and a change of ownership.
+              <strong className="text-ink">Valuation freeze.</strong> Owners 65+
+              (or disabled) within the income limit can freeze their property&apos;s
+              value so it stops climbing.
             </li>
             <li>
-              <strong className="text-ink">Condition.</strong> A mass appraisal
-              rarely accounts for a bad roof, foundation issues, or deferred
-              maintenance.
-            </li>
-            <li>
-              <strong className="text-ink">Missing exemptions.</strong> The
-              head-of-family and veteran / disabled-veteran exemptions reduce
-              taxable value and are often left unclaimed. (Confirm current
-              amounts with the assessor.)
+              <strong className="text-ink">Head-of-family exemption</strong> and
+              the general <strong className="text-ink">3% residential cap</strong>{" "}
+              (NMSA § 7-36-21.2) also hold values down.
             </li>
           </ul>
-        </section>
-
-        {/* UPC */}
-        <section className="mt-10">
-          <h2 className="font-display text-xl text-ink">
-            Finding your UPC (Uniform Parcel Code)
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            The UPC is the number the assessor uses to identify your parcel. You
-            can find it on your Notice of Value or by searching your address on
-            the county assessor&apos;s property record search.
-            {county?.assessor?.propertySearchUrl && (
-              <>
-                {" "}
-                <a
-                  href={county.assessor.propertySearchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-clay hover:text-clay-dark"
-                >
-                  Search the property record ↗
-                </a>
-              </>
-            )}
+          <p className="mt-3 text-xs text-ink-faint">
+            You don&apos;t need to file a protest to apply for these programs, but
+            the application deadline is also 30 days after the NOV mailing.
           </p>
         </section>
 
-        {/* Official forms */}
+        {/* Claim for refund */}
+        {refund && (
+          <section className="mt-10">
+            <h2 className="font-display text-xl text-ink">
+              Missed the 30-day window? Claim for refund
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              If the protest deadline passed, you can still challenge the value
+              through a claim for refund filed in District Court{" "}
+              <strong className="text-ink">until January 10</strong> of the
+              following year. Your first-half tax payment must be current first.
+            </p>
+            <div className="mt-4 rounded-xl bg-sand-100/70 p-4 text-sm text-ink-soft">
+              <p>
+                <strong className="text-ink">Bernalillo County:</strong>{" "}
+                {refund.court}
+                {refund.address ? `, ${refund.address}` : ""}
+                {refund.room ? `, ${refund.room}` : ""}.
+              </p>
+              {refund.filingFee && (
+                <p className="mt-1">Filing fee: {refund.filingFee}</p>
+              )}
+              {refund.forms && (
+                <ul className="mt-2 space-y-1">
+                  {refund.forms.map((fl) => (
+                    <li key={fl.url}>
+                      <FormLink url={fl.url} label={fl.label} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {refund.selfHelp && (
+                <p className="mt-2 text-xs text-ink-faint">{refund.selfHelp}</p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Counties we serve */}
         <section className="mt-10">
-          <h2 className="font-display text-xl text-ink">Official county forms</h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            {forms?.protestFormUrl && (
-              <li>
-                <a
-                  href={forms.protestFormUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-clay hover:text-clay-dark"
-                >
-                  2026 Protest Form ↗
-                </a>
-              </li>
-            )}
-            {forms?.agentAuthorizationUrl && (
-              <li>
-                <a
-                  href={forms.agentAuthorizationUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-clay hover:text-clay-dark"
-                >
-                  Agent Authorization ↗
-                </a>
-              </li>
-            )}
-            {forms?.residentialInfoUrl && (
-              <li>
-                <a
-                  href={forms.residentialInfoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium text-clay hover:text-clay-dark"
-                >
-                  Residential Property Owner information sheet ↗
-                </a>
-              </li>
-            )}
-          </ul>
-          <p className="mt-4 text-xs text-ink-faint">
-            When you engage us, you&apos;ll e-sign the services agreement and the
-            county Agent Authorization together — that lets us file and argue the
-            protest as your representative.
-          </p>
+          <h2 className="font-display text-xl text-ink">Counties we serve</h2>
+          <div className="mt-4 space-y-5">
+            {counties.map((c) => (
+              <div key={c.slug}>
+                <h3 className="font-display text-lg text-ink">{c.name}</h3>
+                <p className="text-sm text-ink-soft">
+                  {c.assessor?.office}
+                  {c.assessor?.phone ? ` · ${c.assessor.phone}` : ""}
+                </p>
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {c.assessor?.appealPortalUrl && (
+                    <FormLink
+                      url={c.assessor.appealPortalUrl}
+                      label="Appeal portal"
+                    />
+                  )}
+                  {c.assessor?.propertySearchUrl && (
+                    <FormLink
+                      url={c.assessor.propertySearchUrl}
+                      label="UPC / property search"
+                    />
+                  )}
+                  {c.forms?.protestFormUrl && (
+                    <FormLink url={c.forms.protestFormUrl} label="Protest form" />
+                  )}
+                  {c.forms?.pamphletUrl && (
+                    <FormLink url={c.forms.pamphletUrl} label="Pamphlet" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className="mt-12">

@@ -8,12 +8,15 @@ import { CopyButton } from "@/components/CopyButton";
 import {
   CASE_STATUSES,
   CASE_STATUS_LABELS,
+  CASE_TYPE_LABELS,
+  CaseType,
   FILING_OUTCOMES,
   GROUNDS,
   GROUND_LABELS,
   Ground,
 } from "@/lib/enums";
 import { getCounty } from "@/lib/nm/counties";
+import { computeRefundClaimDeadline } from "@/lib/nm/law";
 import { computeSavings, formatUsd } from "@/lib/savings";
 import { generatePetition } from "@/lib/petition";
 import {
@@ -103,7 +106,13 @@ export default async function CaseDetail({
             {kase.client.firstName} {kase.client.lastName}
           </h1>
           <StatusPill status={kase.status} />
-          <DeadlineBadge deadline={kase.protestDeadline} />
+          {kase.caseType === "refund_claim" ? (
+            <span className="pill bg-amber-100 text-amber-800">
+              {CASE_TYPE_LABELS[kase.caseType as CaseType]}
+            </span>
+          ) : (
+            <DeadlineBadge deadline={kase.protestDeadline} />
+          )}
         </div>
         <p className="text-sm text-ink-soft">
           {kase.property.situsAddress} · {county?.name} · Tax year{" "}
@@ -391,6 +400,122 @@ export default async function CaseDetail({
               </dl>
             </div>
 
+            {/* County process + official forms */}
+            <div className="card p-6 text-sm">
+              <h2 className="font-display text-lg text-ink">
+                {county?.name ?? "County"} process
+              </h2>
+              <div className="mt-3 space-y-1.5 text-ink-soft">
+                {county?.assessor?.office && <p>{county.assessor.office}</p>}
+                {county?.assessor?.phone && <p>{county.assessor.phone}</p>}
+                {county?.assessor?.email && <p>{county.assessor.email}</p>}
+                {county?.protestFilingWindowNote && (
+                  <p className="text-xs text-ink-faint">
+                    {county.protestFilingWindowNote}
+                  </p>
+                )}
+                {county?.onlineProtestNote && (
+                  <p className="text-xs text-ink-faint">
+                    {county.onlineProtestNote}
+                  </p>
+                )}
+              </div>
+              <div className="mt-3 flex flex-col gap-1">
+                {county?.assessor?.appealPortalUrl && (
+                  <FormLink
+                    url={county.assessor.appealPortalUrl}
+                    label="Online appeal portal"
+                  />
+                )}
+                {county?.assessor?.propertySearchUrl && (
+                  <FormLink
+                    url={county.assessor.propertySearchUrl}
+                    label="Property / UPC search"
+                  />
+                )}
+                {county?.forms?.protestFormUrl && (
+                  <FormLink url={county.forms.protestFormUrl} label="Protest form" />
+                )}
+                {county?.forms?.agentAuthorizationUrl && (
+                  <FormLink
+                    url={county.forms.agentAuthorizationUrl}
+                    label="Agent authorization"
+                  />
+                )}
+                {county?.forms?.pamphletUrl && (
+                  <FormLink url={county.forms.pamphletUrl} label="Protest pamphlet" />
+                )}
+                {county?.forms?.helpGuideUrl && (
+                  <FormLink url={county.forms.helpGuideUrl} label="Help guide" />
+                )}
+                {county?.forms?.residentialInfoUrl && (
+                  <FormLink
+                    url={county.forms.residentialInfoUrl}
+                    label="Residential owner info"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Claim for refund (missed-deadline path) */}
+            {(kase.caseType === "refund_claim" || county?.refundClaim) && (
+              <div
+                className={`card p-6 text-sm ${
+                  kase.caseType === "refund_claim"
+                    ? "border-amber-300 bg-amber-50/60"
+                    : ""
+                }`}
+              >
+                <h2 className="font-display text-lg text-ink">Claim for refund</h2>
+                {kase.caseType === "refund_claim" ? (
+                  <p className="mt-2 text-ink-soft">
+                    Protest window missed — this case runs as a District Court
+                    claim for refund.
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-ink-faint">
+                    Fallback path if the 30-day protest window is missed.
+                  </p>
+                )}
+                {county?.refundClaim && (
+                  <dl className="mt-3 space-y-2">
+                    <Row label="Court" value={county.refundClaim.court} />
+                    {county.refundClaim.address && (
+                      <Row label="Where" value={county.refundClaim.address} />
+                    )}
+                    {county.refundClaim.room && (
+                      <Row label="Room" value={county.refundClaim.room} />
+                    )}
+                    <Row
+                      label="Deadline"
+                      value={formatDate(computeRefundClaimDeadline(kase.taxYear))}
+                    />
+                    {county.refundClaim.filingFee && (
+                      <Row label="Filing fee" value={county.refundClaim.filingFee} />
+                    )}
+                  </dl>
+                )}
+                {county?.refundClaim?.paymentNote && (
+                  <p className="mt-2 text-xs text-ink-faint">
+                    {county.refundClaim.paymentNote}
+                  </p>
+                )}
+                {county?.refundClaim?.forms &&
+                  county.refundClaim.forms.length > 0 && (
+                    <div className="mt-3 flex flex-col gap-1">
+                      {county.refundClaim.forms.map((fl) => (
+                        <FormLink key={fl.url} url={fl.url} label={fl.label} />
+                      ))}
+                    </div>
+                  )}
+                {county?.refundClaim?.selfHelp && (
+                  <p className="mt-2 text-xs text-ink-faint">
+                    {county.refundClaim.selfHelp}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Agreement */}
             <div className="card p-6 text-sm">
               <h2 className="font-display text-lg text-ink">Agreement</h2>
@@ -441,6 +566,19 @@ export default async function CaseDetail({
         </div>
       </main>
     </div>
+  );
+}
+
+function FormLink({ url, label }: { url: string; label: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-clay hover:text-clay-dark"
+    >
+      {label} ↗
+    </a>
   );
 }
 

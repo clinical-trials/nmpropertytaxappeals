@@ -32,17 +32,29 @@ export const EXEMPTIONS: Exemption[] = [
   },
   {
     slug: "veteran",
-    label: "Veteran",
+    label: "Veteran's exemption",
     taxableReduction: 4000, // VERIFY — increased by recent amendment; confirm current amount
     note: "Honorably discharged veteran (or surviving spouse). Amount recently changed — verify.",
   },
   {
     slug: "disabled_veteran",
-    label: "100% disabled veteran",
+    label: "Disabled veteran exemption",
     taxableReduction: "full",
-    note: "Full exemption on the veteran's primary residence (100% service-connected).",
+    note: "Full exemption on the veteran's primary residence (100% service-connected disability).",
   },
 ];
+
+/**
+ * Valuation "freeze" — the limitation on increase in value for a single-family
+ * residence occupied by a low-income owner who is 65+ or disabled
+ * (NMSA 1978 § 7-36-21.3). Not a taxable-value reduction; it freezes the
+ * property's value, so it's modeled separately from EXEMPTIONS.
+ */
+export const VALUATION_FREEZE = {
+  slug: "valuation_freeze",
+  label: "Valuation freeze (age 65+ or disabled, income-qualified)",
+  note: "Freezes the property's value for a qualifying owner-occupant who is 65 or older (or disabled) and within the income limit. VERIFY current income limit.",
+};
 
 function startOfDay(d: Date): Date {
   const x = new Date(d);
@@ -62,6 +74,15 @@ export function addDays(date: Date, days: number): Date {
  */
 export function computeProtestDeadline(mailingDate: Date): Date {
   return startOfDay(addDays(mailingDate, PROTEST_WINDOW_DAYS));
+}
+
+/**
+ * Claim-for-refund deadline for a missed protest: January 10 of the year
+ * following the tax year (District Court civil action; payments must be
+ * current). See county.refundClaim for court + forms.
+ */
+export function computeRefundClaimDeadline(taxYear: number): Date {
+  return new Date(taxYear + 1, 0, 10); // Jan 10 of the next year
 }
 
 export function daysUntil(deadline: Date, from: Date = new Date()): number {

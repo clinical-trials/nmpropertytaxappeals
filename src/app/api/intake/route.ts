@@ -29,6 +29,7 @@ const schema = z.object({
   qualifiesHeadOfFamily: z.boolean().optional(),
   qualifiesVeteran: z.boolean().optional(),
   qualifiesDisabledVeteran: z.boolean().optional(),
+  qualifiesValuationFreeze: z.boolean().optional(),
   claimsExemptionAlready: z.boolean().optional(),
 });
 
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
 
   const eligibility = evaluate({
     fullValue: d.fullValue,
+    taxYear,
     priorYearValue: d.priorYearValue ?? null,
     purchasePrice: d.purchasePrice ?? null,
     purchaseDate,
@@ -118,6 +120,7 @@ export async function POST(req: NextRequest) {
     qualifiesHeadOfFamily: d.qualifiesHeadOfFamily,
     qualifiesVeteran: d.qualifiesVeteran,
     qualifiesDisabledVeteran: d.qualifiesDisabledVeteran,
+    qualifiesValuationFreeze: d.qualifiesValuationFreeze,
     claimsExemptionAlready: d.claimsExemptionAlready,
     protestDeadline: deadline,
   });
@@ -136,6 +139,7 @@ export async function POST(req: NextRequest) {
       noticeId: notice.id,
       countyId: d.countyId,
       taxYear,
+      caseType: eligibility.track,
       status: "intake",
       grounds: JSON.stringify(eligibility.grounds),
       protestDeadline: deadline,

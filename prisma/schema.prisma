@@ -92,6 +92,8 @@ model Case {
 
   countyId       String
   taxYear        Int
+  /// "protest" (normal appeal) | "refund_claim" (missed deadline -> District Court).
+  caseType       String   @default("protest")
   /// See CASE_STATUSES in src/lib/enums.ts.
   status         String   @default("intake")
   /// JSON array of ground slugs, e.g. ["over_valuation","missing_exemption"].

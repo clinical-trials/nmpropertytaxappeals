@@ -2,6 +2,14 @@
 // SQLite has no enums, so these documented lists are the source of truth and
 // are validated in code (zod) at the boundaries.
 
+export const CASE_TYPES = ["protest", "refund_claim"] as const;
+export type CaseType = (typeof CASE_TYPES)[number];
+
+export const CASE_TYPE_LABELS: Record<CaseType, string> = {
+  protest: "Protest (appeal)",
+  refund_claim: "Claim for refund (District Court)",
+};
+
 export const CASE_STATUSES = [
   "intake", // submitted, not yet engaged
   "qualified", // operator reviewed, worth pursuing
