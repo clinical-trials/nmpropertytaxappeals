@@ -1,0 +1,19 @@
+# Local Postgres for development parity with production.
+# Usage: `docker compose up -d`, then set DATABASE_URL/DIRECT_URL in .env to:
+#   postgresql://nmta:nmta@localhost:5432/nmta?schema=public
+# (No Docker? Use a free cloud Postgres like Neon and point .env at it.)
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nmta
+      POSTGRES_PASSWORD: nmta
+      POSTGRES_DB: nmta
+    ports:
+      - "5432:5432"
+    volumes:
+      - nmta_pg:/var/lib/postgresql/data
+
+volumes:
+  nmta_pg:
