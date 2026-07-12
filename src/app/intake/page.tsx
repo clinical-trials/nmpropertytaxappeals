@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { COUNTIES, getCounty } from "@/lib/nm/counties";
-import type { EligibilityResult } from "@/lib/nm/eligibility";
+import { evaluate, type EligibilityResult } from "@/lib/nm/eligibility";
 import { GROUND_LABELS, Ground } from "@/lib/enums";
 
 type Form = {
@@ -78,6 +78,7 @@ export default function IntakePage() {
     { caseId: string; eligibility: EligibilityResult } | null
   >(null);
   const [error, setError] = useState<string | null>(null);
+  const [signNote, setSignNote] = useState(false);
 
   const county = getCounty(f.countyId);
   const countySupported = !!county?.supported;
@@ -99,49 +100,45 @@ export default function IntakePage() {
     return true;
   }, [step, f, countySupported]);
 
+  // Static prototype: the eligibility read runs entirely in the browser.
+  // (In the full app this posts to /api/intake, which also persists the case
+  // and starts the DocuSign packet.)
   async function submit() {
     setSubmitting(true);
     setError(null);
     try {
-      const payload = {
-        firstName: f.firstName,
-        lastName: f.lastName,
-        email: f.email,
-        phone: f.phone || undefined,
-        countyId: f.countyId,
-        situsAddress: f.situsAddress,
-        ownerName: f.ownerName,
-        upc: f.upc || undefined,
-        mailingAddress: f.mailingAddress || undefined,
-        fullValue: toInt(f.fullValue),
+      const taxYear = new Date().getFullYear();
+      const printed =
+        f.deadlineMode === "printed" && f.protestDeadline
+          ? new Date(f.protestDeadline)
+          : null;
+      const mailing =
+        f.deadlineMode === "mailing" && f.mailingDate
+          ? new Date(f.mailingDate)
+          : null;
+      const deadline =
+        printed ??
+        (mailing ? new Date(mailing.getTime() + 30 * 86400000) : null);
+      if (!deadline || isNaN(deadline.getTime())) {
+        throw new Error(
+          "Please provide the protest deadline or the NOV mailing date."
+        );
+      }
+      const eligibility = evaluate({
+        fullValue: toInt(f.fullValue) ?? 0,
+        taxYear,
         priorYearValue: toInt(f.priorYearValue),
-        protestDeadline:
-          f.deadlineMode === "printed" ? f.protestDeadline || undefined : undefined,
-        mailingDate:
-          f.deadlineMode === "mailing" ? f.mailingDate || undefined : undefined,
-        yearBuilt: toInt(f.yearBuilt),
-        squareFeet: toInt(f.squareFeet),
         purchasePrice: toInt(f.purchasePrice),
-        purchaseDate: f.purchaseDate || undefined,
+        purchaseDate: f.purchaseDate ? new Date(f.purchaseDate) : null,
         hasConditionIssues: f.hasConditionIssues,
-        conditionNotes: f.conditionNotes || undefined,
         qualifiesHeadOfFamily: f.qualifiesHeadOfFamily,
         qualifiesVeteran: f.qualifiesVeteran,
         qualifiesDisabledVeteran: f.qualifiesDisabledVeteran,
         qualifiesValuationFreeze: f.qualifiesValuationFreeze,
         claimsExemptionAlready: f.claimsExemptionAlready,
-      };
-      const res = await fetch("/api/intake", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        protestDeadline: deadline,
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Something went wrong. Please try again.");
-      }
-      const data = await res.json();
-      setResult({ caseId: data.caseId, eligibility: data.eligibility });
+      setResult({ caseId: "prototype", eligibility });
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -149,23 +146,8 @@ export default function IntakePage() {
     }
   }
 
-  async function proceedToSign() {
-    if (!result) return;
-    setSubmitting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/docusign/envelope", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caseId: result.caseId }),
-      });
-      if (!res.ok) throw new Error("Could not start the agreement. Please try again.");
-      const data = await res.json();
-      window.location.href = data.signingUrl;
-    } catch (e: any) {
-      setError(e.message);
-      setSubmitting(false);
-    }
+  function proceedToSign() {
+    setSignNote(true);
   }
 
   if (result) {
@@ -178,6 +160,7 @@ export default function IntakePage() {
             onProceed={proceedToSign}
             submitting={submitting}
             error={error}
+            signNote={signNote}
           />
         </div>
       </div>
@@ -527,11 +510,13 @@ function ResultView({
   onProceed,
   submitting,
   error,
+  signNote,
 }: {
   eligibility: EligibilityResult;
   onProceed: () => void;
   submitting: boolean;
   error: string | null;
+  signNote?: boolean;
 }) {
   const isRefund = eligibility.track === "refund_claim";
   const refundActionable =
@@ -614,18 +599,33 @@ function ResultView({
         </p>
       )}
 
-      {canProceed && (
+      {canProceed && !signNote && (
         <button
           className="btn-primary mt-6 w-full py-3 text-base"
           onClick={onProceed}
           disabled={submitting}
         >
-          {submitting
-            ? "Preparing your agreement…"
-            : isRefund
-              ? "Review & sign to start my refund claim"
-              : "Review & sign the agreement"}
+          {isRefund
+            ? "Review & sign to start my refund claim"
+            : "Review & sign the agreement"}
         </button>
+      )}
+      {signNote && (
+        <div className="mt-6 rounded-xl border border-clay/30 bg-clay/5 p-4 text-sm text-ink-soft">
+          <p className="font-medium text-ink">This is the static prototype</p>
+          <p className="mt-1">
+            The next step — e-signing the services agreement and the county Agent
+            Authorization together, then handing the case to an operator — runs
+            in the full application (with a server + database). Reach out at{" "}
+            <a
+              href="mailto:support@newmexicoappeals.com"
+              className="font-medium text-clay hover:text-clay-dark"
+            >
+              support@newmexicoappeals.com
+            </a>{" "}
+            to move forward.
+          </p>
+        </div>
       )}
       <p className="mt-3 text-center text-xs text-ink-faint">
         30% of your tax savings · no savings, no fee
