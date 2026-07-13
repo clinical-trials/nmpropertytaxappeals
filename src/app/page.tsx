@@ -32,6 +32,24 @@ export default function Home() {
             Takes about 3 minutes · no upfront cost
           </span>
         </div>
+
+        {/* Explainer video */}
+        <div className="mt-10 overflow-hidden rounded-2xl border border-ink/10 bg-black/5 shadow-sm">
+          <video
+            className="h-auto w-full"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            controls
+          >
+            <source
+              src="/nmpropertytaxappeals/property-tax-appeal.mp4"
+              type="video/mp4"
+            />
+          </video>
+        </div>
       </section>
 
       {/* Fee band */}

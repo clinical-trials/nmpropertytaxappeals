@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { COUNTIES, getCounty } from "@/lib/nm/counties";
@@ -358,6 +358,15 @@ export default function IntakePage() {
               title="Your Notice of Value"
               hint="These numbers are on the notice the assessor mailed you this spring."
             >
+              <NoticeScanner
+                onExtract={(d) => {
+                  if (d.fullValue) set("fullValue", d.fullValue);
+                  if (d.deadline) {
+                    set("deadlineMode", "printed");
+                    set("protestDeadline", d.deadline);
+                  }
+                }}
+              />
               <Money
                 label="Assessed (full) value on the notice"
                 value={f.fullValue}
@@ -806,6 +815,8 @@ function AgreementView({
       html: renderAgentAuthorization({
         ownerName: form.ownerName,
         ownerMailingAddress: form.mailingAddress || form.situsAddress,
+        ownerPhone: form.phone,
+        ownerEmail: form.email,
         propertyAddress: form.situsAddress,
         upc: form.upc,
         countyName: county?.name ?? "County",
@@ -996,6 +1007,93 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between gap-4">
       <dt className="text-ink-faint">{label}</dt>
       <dd className="text-right font-medium text-ink">{value}</dd>
+    </div>
+  );
+}
+
+// Discrete, optional: photograph the mailed Notice of Value and let client-side
+// OCR pre-fill the values — the way a phone reads a credit card. Manual entry
+// stays the primary path.
+function NoticeScanner({
+  onExtract,
+}: {
+  onExtract: (d: { fullValue?: string; deadline?: string }) => void;
+}) {
+  const [status, setStatus] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function loadTesseract(): Promise<any> {
+    const w = window as any;
+    if (w.Tesseract) return w.Tesseract;
+    await new Promise<void>((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src =
+        "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("load failed"));
+      document.head.appendChild(s);
+    });
+    return w.Tesseract;
+  }
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    setStatus("Reading your notice…");
+    try {
+      const T = await loadTesseract();
+      const { data } = await T.recognize(file, "eng");
+      const text: string = data?.text || "";
+      const amounts = [...text.matchAll(/([\d]{2,3}(?:,\d{3})+)/g)]
+        .map((m) => parseInt(m[1].replace(/,/g, ""), 10))
+        .filter((n) => n >= 20000 && n <= 5000000);
+      const fullValue = amounts.length
+        ? String(Math.max(...amounts))
+        : undefined;
+      const dm = text.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      const deadline = dm
+        ? `${dm[3]}-${dm[1].padStart(2, "0")}-${dm[2].padStart(2, "0")}`
+        : undefined;
+      onExtract({ fullValue, deadline });
+      setStatus(
+        fullValue
+          ? `Read an assessed value of $${Number(
+              fullValue
+            ).toLocaleString()} — please confirm it below.`
+          : "Couldn't read it clearly — please enter the values manually."
+      );
+    } catch {
+      setStatus("Couldn't scan it — please enter the values manually.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-clay/25 bg-clay/5 p-3">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFile}
+      />
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => inputRef.current?.click()}
+        className="flex w-full items-center justify-center gap-2 text-sm font-medium text-clay hover:text-clay-dark disabled:opacity-60"
+      >
+        📷 {busy ? "Reading…" : "Snap a photo of your notice to autofill"}
+      </button>
+      {status && <p className="mt-2 text-xs text-ink-soft">{status}</p>}
+      <p className="mt-1 text-center text-[11px] text-ink-faint">
+        Optional · beta · you can always type the values in.
+      </p>
     </div>
   );
 }
