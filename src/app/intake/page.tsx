@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { COUNTIES, getCounty } from "@/lib/nm/counties";
@@ -26,6 +26,8 @@ type Form = {
   purchasePrice: string;
   purchaseDate: string;
   hasConditionIssues: boolean;
+  maintenanceIssues: string[];
+  attachments: string[];
   conditionNotes: string;
   qualifiesHeadOfFamily: boolean;
   qualifiesVeteran: boolean;
@@ -54,6 +56,8 @@ const EMPTY: Form = {
   purchasePrice: "",
   purchaseDate: "",
   hasConditionIssues: false,
+  maintenanceIssues: [],
+  attachments: [],
   conditionNotes: "",
   qualifiesHeadOfFamily: false,
   qualifiesVeteran: false,
@@ -68,6 +72,16 @@ const EMPTY: Form = {
 };
 
 const STEPS = ["Property", "Notice of Value", "Your home", "Exemptions", "Contact"];
+
+// Big-ticket deferred-maintenance items — the strongest condition evidence.
+const MAINTENANCE_ITEMS = [
+  "Roof",
+  "Foundation / structural",
+  "Plumbing",
+  "Electrical",
+  "A/C & heating",
+  "Other major item",
+];
 
 function toInt(s: string): number | null {
   const n = parseInt(s.replace(/[^0-9]/g, ""), 10);
@@ -91,6 +105,52 @@ export default function IntakePage() {
 
   function set<K extends keyof Form>(k: K, v: Form[K]) {
     setF((prev) => ({ ...prev, [k]: v }));
+  }
+
+  // Remember the owner/contact so a second property is fast to enter.
+  const CONTACT_KEYS = [
+    "firstName",
+    "lastName",
+    "email",
+    "phone",
+    "mailingAddress",
+    "ownerName",
+  ] as const;
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem("nmta_contact") || "null"
+      );
+      if (saved) setF((prev) => ({ ...prev, ...saved }));
+    } catch {}
+  }, []);
+
+  function saveContact() {
+    try {
+      const contact = Object.fromEntries(
+        CONTACT_KEYS.map((k) => [k, f[k]])
+      );
+      localStorage.setItem("nmta_contact", JSON.stringify(contact));
+    } catch {}
+  }
+
+  function handleSigned(name: string) {
+    saveContact();
+    setSignedName(name);
+  }
+
+  // Start another property, keeping the owner/contact details.
+  function addAnother() {
+    const contact = Object.fromEntries(
+      CONTACT_KEYS.map((k) => [k, f[k]])
+    ) as Partial<Form>;
+    setF({ ...EMPTY, ...contact });
+    setResult(null);
+    setSignedName(null);
+    setShowAgreement(false);
+    setError(null);
+    setStep(0);
   }
 
   const canNext = useMemo(() => {
@@ -136,7 +196,8 @@ export default function IntakePage() {
         priorYearValue: toInt(f.priorYearValue),
         purchasePrice: toInt(f.purchasePrice),
         purchaseDate: f.purchaseDate ? new Date(f.purchaseDate) : null,
-        hasConditionIssues: f.hasConditionIssues,
+        hasConditionIssues:
+          f.hasConditionIssues || f.maintenanceIssues.length > 0,
         qualifiesHeadOfFamily: f.qualifiesHeadOfFamily,
         qualifiesVeteran: f.qualifiesVeteran,
         qualifiesDisabledVeteran: f.qualifiesDisabledVeteran,
@@ -160,7 +221,12 @@ export default function IntakePage() {
         <div>
           <SiteHeader cta={false} />
           <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6">
-            <DoneView form={f} taxYear={taxYear} signature={signedName} />
+            <DoneView
+              form={f}
+              taxYear={taxYear}
+              signature={signedName}
+              onAddAnother={addAnother}
+            />
           </div>
         </div>
       );
@@ -175,7 +241,7 @@ export default function IntakePage() {
               form={f}
               taxYear={taxYear}
               isRefund={result.eligibility.track === "refund_claim"}
-              onSigned={(name) => setSignedName(name)}
+              onSigned={handleSigned}
               onBack={() => setShowAgreement(false)}
             />
           </div>
@@ -389,27 +455,96 @@ export default function IntakePage() {
                   />
                 </div>
               </div>
-              <label className="flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={f.hasConditionIssues}
-                  onChange={(e) => set("hasConditionIssues", e.target.checked)}
-                />
-                <span className="text-ink-soft">
-                  My home has condition problems (foundation, roof, deferred
-                  maintenance, etc.)
-                </span>
-              </label>
-              {f.hasConditionIssues && (
-                <textarea
-                  className="field"
-                  rows={3}
-                  placeholder="Briefly describe the issues…"
-                  value={f.conditionNotes}
-                  onChange={(e) => set("conditionNotes", e.target.value)}
-                />
-              )}
+              <div>
+                <label className="label">Deferred maintenance</label>
+                <p className="mb-2 text-sm text-ink-faint">
+                  Documented problems with big-ticket systems build the
+                  strongest case. Check any that apply.
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {MAINTENANCE_ITEMS.map((item) => (
+                    <label
+                      key={item}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={f.maintenanceIssues.includes(item)}
+                        onChange={() =>
+                          set(
+                            "maintenanceIssues",
+                            f.maintenanceIssues.includes(item)
+                              ? f.maintenanceIssues.filter((x) => x !== item)
+                              : [...f.maintenanceIssues, item]
+                          )
+                        }
+                      />
+                      <span className="text-ink-soft">{item}</span>
+                    </label>
+                  ))}
+                </div>
+                {f.maintenanceIssues.length > 0 && (
+                  <textarea
+                    className="field mt-3"
+                    rows={3}
+                    placeholder="Briefly describe the issues (age, severity, any repair estimates)…"
+                    value={f.conditionNotes}
+                    onChange={(e) => set("conditionNotes", e.target.value)}
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="label">Photos &amp; documents</label>
+                <p className="mb-2 text-sm text-ink-faint">
+                  Attach photos, inspection reports, or repair estimates — this
+                  is what turns a claim into evidence.
+                </p>
+                <label className="flex cursor-pointer items-center justify-center rounded-xl border border-dashed border-ink/25 bg-white px-4 py-6 text-center text-sm text-ink-soft hover:border-clay">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,.pdf,.doc,.docx,.heic,.txt"
+                    className="hidden"
+                    onChange={(e) => {
+                      const names = [...(e.target.files || [])].map(
+                        (file) => file.name
+                      );
+                      set("attachments", [...f.attachments, ...names]);
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                  <span>+ Add photos or documents</span>
+                </label>
+                {f.attachments.length > 0 && (
+                  <ul className="mt-3 space-y-1.5">
+                    {f.attachments.map((nm, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center justify-between rounded-lg bg-sand-100/70 px-3 py-2 text-sm"
+                      >
+                        <span className="mr-2 truncate text-ink">📎 {nm}</span>
+                        <button
+                          type="button"
+                          className="flex-none text-xs text-ink-faint hover:text-red-600"
+                          onClick={() =>
+                            set(
+                              "attachments",
+                              f.attachments.filter((_, j) => j !== i)
+                            )
+                          }
+                        >
+                          remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-2 text-xs text-ink-faint">
+                  Encrypted upload in the live service. In this demo, files
+                  aren&apos;t sent — only the names are listed.
+                </p>
+              </div>
             </Section>
           )}
 
@@ -768,12 +903,15 @@ function DoneView({
   form,
   taxYear,
   signature,
+  onAddAnother,
 }: {
   form: Form;
   taxYear: number;
   signature: string;
+  onAddAnother: () => void;
 }) {
   const county = getCounty(form.countyId);
+  const docCount = form.attachments.length;
   return (
     <div>
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
@@ -795,6 +933,18 @@ function DoneView({
           <SummaryRow label="Property" value={form.situsAddress} />
           <SummaryRow label="County" value={county?.name ?? form.countyId} />
           <SummaryRow label="Tax year" value={String(taxYear)} />
+          {form.maintenanceIssues.length > 0 && (
+            <SummaryRow
+              label="Condition noted"
+              value={form.maintenanceIssues.join(", ")}
+            />
+          )}
+          {docCount > 0 && (
+            <SummaryRow
+              label="Documents"
+              value={`${docCount} attached`}
+            />
+          )}
           <SummaryRow label="Fee" value="30% of tax saved · no savings, no fee" />
         </dl>
       </div>
@@ -813,6 +963,19 @@ function DoneView({
           </li>
           <li>You pay only if we lower your bill.</li>
         </ol>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-clay/25 bg-clay/5 p-4">
+        <p className="text-sm font-medium text-ink">Own another property?</p>
+        <p className="mt-1 text-sm text-ink-soft">
+          We&apos;ll keep your details so the next one takes seconds.
+        </p>
+        <button
+          onClick={onAddAnother}
+          className="btn-primary mt-3 w-full py-3"
+        >
+          + Add another property
+        </button>
       </div>
 
       <p className="mt-5 text-center text-xs text-ink-faint">
