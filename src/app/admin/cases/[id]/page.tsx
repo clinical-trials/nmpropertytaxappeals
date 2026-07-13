@@ -19,6 +19,7 @@ import { getCounty } from "@/lib/nm/counties";
 import { computeRefundClaimDeadline } from "@/lib/nm/law";
 import { computeSavings, formatUsd } from "@/lib/savings";
 import { generatePetition } from "@/lib/petition";
+import { generateRefundComplaint } from "@/lib/complaint";
 import {
   saveCase,
   addEvidence,
@@ -68,17 +69,37 @@ export default async function CaseDetail({
       : null;
   const savingsIsFinal = kase.finalAssessedValue != null;
 
-  const petition = generatePetition({
-    countyId: kase.countyId,
-    taxYear: kase.taxYear,
-    ownerName: kase.property.ownerName,
-    situsAddress: kase.property.situsAddress,
-    upc: kase.property.upc,
-    mailingAddress: kase.client.mailingAddress,
-    initialAssessedValue: kase.initialAssessedValue,
-    targetValue: kase.targetValue,
-    grounds,
-  });
+  const isRefund = kase.caseType === "refund_claim";
+  // Auto-suggest an opinion of value (starting point for the operator):
+  // a recent purchase price, else a 10% reduction off the assessed value.
+  const suggestedTarget =
+    kase.property.purchasePrice ??
+    (kase.initialAssessedValue
+      ? Math.round((kase.initialAssessedValue * 0.9) / 100) * 100
+      : null);
+
+  const filingDoc = isRefund
+    ? generateRefundComplaint({
+        countyId: kase.countyId,
+        taxYear: kase.taxYear,
+        ownerName: kase.property.ownerName,
+        ownerMailingAddress: kase.client.mailingAddress,
+        situsAddress: kase.property.situsAddress,
+        upc: kase.property.upc,
+        initialAssessedValue: kase.initialAssessedValue,
+        targetValue: kase.targetValue ?? suggestedTarget,
+      })
+    : generatePetition({
+        countyId: kase.countyId,
+        taxYear: kase.taxYear,
+        ownerName: kase.property.ownerName,
+        situsAddress: kase.property.situsAddress,
+        upc: kase.property.upc,
+        mailingAddress: kase.client.mailingAddress,
+        initialAssessedValue: kase.initialAssessedValue,
+        targetValue: kase.targetValue ?? suggestedTarget,
+        grounds,
+      });
 
   const audit = await db.auditLog.findMany({
     where: {
@@ -93,10 +114,27 @@ export default async function CaseDetail({
     take: 12,
   });
 
+  // Suggested next action so the operator always knows the move.
+  const NEXT_STEP: Record<string, string> = {
+    intake:
+      "Review & qualify — set the grounds and a target value, then send the engagement.",
+    qualified: "Send the engagement — client e-signs both documents.",
+    engaged: isRefund
+      ? "File the complaint for refund in District Court before Jan 10."
+      : "File the protest with the assessor before the deadline.",
+    filed: "Track the informal review — record the assessor's offer.",
+    informal: "If unsettled, attend the hearing before the protests board.",
+    hearing_scheduled: "After the hearing, record the outcome.",
+    resolved: "Confirm final value & savings, then invoice the fee and close.",
+    closed: "Closed — nothing to do.",
+    declined: "Declined — nothing to do.",
+  };
+  const nextStep = NEXT_STEP[kase.status];
+
   return (
     <div>
       <AdminBar />
-      <main className="mx-auto max-w-6xl px-6 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <Link href="/admin" className="text-sm text-ink-faint hover:text-ink">
           ← All cases
         </Link>
@@ -118,6 +156,13 @@ export default async function CaseDetail({
           {kase.property.situsAddress} · {county?.name} · Tax year{" "}
           {kase.taxYear}
         </p>
+
+        {nextStep && (
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-clay/25 bg-clay/5 px-4 py-2.5 text-sm">
+            <span className="font-medium text-clay">Next step</span>
+            <span className="text-ink-soft">{nextStep}</span>
+          </div>
+        )}
 
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {/* Left / main workspace */}
@@ -157,8 +202,18 @@ export default async function CaseDetail({
                     defaultValue={kase.targetValue ?? ""}
                     className="field"
                     inputMode="numeric"
-                    placeholder="315000"
+                    placeholder={
+                      suggestedTarget ? String(suggestedTarget) : "315000"
+                    }
                   />
+                  {!kase.targetValue && suggestedTarget && (
+                    <p className="mt-1 text-xs text-ink-faint">
+                      Suggested {formatUsd(suggestedTarget)}
+                      {kase.property.purchasePrice
+                        ? " (recent purchase price)"
+                        : " (10% under assessed)"}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="label">Mill rate (per $1,000 net)</label>
@@ -270,16 +325,19 @@ export default async function CaseDetail({
               </form>
             </div>
 
-            {/* Petition */}
+            {/* Auto-generated filing document */}
             <div className="card p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h2 className="font-display text-lg text-ink">
-                  Protest petition
+                  {isRefund ? "Complaint for refund" : "Protest petition"}
+                  <span className="ml-2 align-middle text-[10px] font-normal uppercase tracking-wide text-clay">
+                    auto-generated
+                  </span>
                 </h2>
-                <CopyButton text={petition} label="Copy petition" />
+                <CopyButton text={filingDoc} label="Copy" />
               </div>
               <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-xl bg-sand-100/70 p-4 text-xs leading-relaxed text-ink">
-                {petition}
+                {filingDoc}
               </pre>
               <form action={markFiled} className="mt-4 flex flex-wrap items-end gap-3">
                 <input type="hidden" name="caseId" value={kase.id} />

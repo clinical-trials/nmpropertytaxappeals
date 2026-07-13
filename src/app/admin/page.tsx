@@ -23,7 +23,7 @@ export default async function AdminHome() {
   return (
     <div>
       <AdminBar />
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h1 className="font-display text-2xl text-ink">Cases</h1>
@@ -38,8 +38,8 @@ export default async function AdminHome() {
             No cases yet. They&apos;ll appear here as homeowners complete intake.
           </div>
         ) : (
-          <div className="card overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="card overflow-x-auto">
+            <table className="w-full min-w-[560px] text-sm">
               <thead className="bg-sand-100/70 text-left text-xs uppercase tracking-wide text-ink-faint">
                 <tr>
                   <th className="px-4 py-3 font-medium">Owner / property</th>

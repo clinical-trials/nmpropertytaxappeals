@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireOperator } from "@/lib/admin-auth";
 import { CASE_STATUSES, FILING_OUTCOMES, GROUNDS } from "@/lib/enums";
 import { generatePetition } from "@/lib/petition";
+import { generateRefundComplaint } from "@/lib/complaint";
 import { getCounty } from "@/lib/nm/counties";
 
 function num(v: FormDataEntryValue | null): number | null {
@@ -86,17 +87,29 @@ export async function markFiled(formData: FormData) {
   });
   if (!kase) return;
 
-  const petitionText = generatePetition({
-    countyId: kase.countyId,
-    taxYear: kase.taxYear,
-    ownerName: kase.property.ownerName,
-    situsAddress: kase.property.situsAddress,
-    upc: kase.property.upc,
-    mailingAddress: kase.client.mailingAddress,
-    initialAssessedValue: kase.initialAssessedValue,
-    targetValue: kase.targetValue,
-    grounds: JSON.parse(kase.grounds || "[]"),
-  });
+  const petitionText =
+    kase.caseType === "refund_claim"
+      ? generateRefundComplaint({
+          countyId: kase.countyId,
+          taxYear: kase.taxYear,
+          ownerName: kase.property.ownerName,
+          ownerMailingAddress: kase.client.mailingAddress,
+          situsAddress: kase.property.situsAddress,
+          upc: kase.property.upc,
+          initialAssessedValue: kase.initialAssessedValue,
+          targetValue: kase.targetValue,
+        })
+      : generatePetition({
+          countyId: kase.countyId,
+          taxYear: kase.taxYear,
+          ownerName: kase.property.ownerName,
+          situsAddress: kase.property.situsAddress,
+          upc: kase.property.upc,
+          mailingAddress: kase.client.mailingAddress,
+          initialAssessedValue: kase.initialAssessedValue,
+          targetValue: kase.targetValue,
+          grounds: JSON.parse(kase.grounds || "[]"),
+        });
 
   const method = String(formData.get("method") || "mail");
   const confirmationNumber = str(formData.get("confirmationNumber"));
