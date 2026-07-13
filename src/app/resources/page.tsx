@@ -28,8 +28,8 @@ export default function Resources() {
   return (
     <div>
       <SiteHeader />
-      <div className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="font-display text-3xl text-ink">
+      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6 sm:py-12">
+        <h1 className="font-display text-2xl text-ink sm:text-3xl">
           New Mexico property tax protests
         </h1>
         <p className="mt-2 text-ink-soft">
@@ -66,6 +66,28 @@ export default function Resources() {
               the assessor may happen first — most protests resolve there.
             </li>
           </ul>
+        </section>
+
+        {/* Build a stronger case */}
+        <section className="mt-10">
+          <h2 className="font-display text-xl text-ink">
+            Build a stronger case
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+            By securely providing uploaded photos of your home, we help you build
+            an even stronger case — especially documentation of big-ticket
+            condition issues like the roof, foundation, plumbing, electrical, and
+            A/C. Recent repair estimates and inspection reports help too.
+          </p>
+          <div className="mt-4 rounded-xl bg-sand-100/70 p-4 text-sm leading-relaxed text-ink-soft">
+            <p>
+              <strong className="text-ink">What your petition must state:</strong>{" "}
+              your name and address and a description of the property; why you
+              believe the value, classification, allocation, or exemption denial
+              is incorrect and what you believe is correct; and the value or
+              classification that is <em>not</em> in dispute.
+            </p>
+          </div>
         </section>
 
         {/* Tax-saving programs */}

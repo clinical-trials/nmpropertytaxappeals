@@ -16,7 +16,7 @@ const STEPS = [
   },
   {
     t: "We build the case",
-    d: "We pull comparable sales, weigh condition and the 3% residential cap, and check for exemptions you may have missed — then file the petition as your authorized representative.",
+    d: "We pull comparable sales, weigh condition and the 3% residential cap, and check for exemptions you may have missed — then file the petition as your authorized representative. By securely providing uploaded photos of your home, you help us build an even stronger case.",
   },
   {
     t: "We negotiate and, if needed, go to hearing",
@@ -32,8 +32,10 @@ export default function HowItWorks() {
   return (
     <div>
       <SiteHeader />
-      <div className="mx-auto max-w-2xl px-6 py-12">
-        <h1 className="font-display text-3xl text-ink">How an appeal works</h1>
+      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6 sm:py-12">
+        <h1 className="font-display text-2xl text-ink sm:text-3xl">
+          How an appeal works
+        </h1>
         <p className="mt-2 text-ink-soft">
           Plain and unhurried. Here&apos;s the whole path, start to finish.
         </p>
