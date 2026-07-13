@@ -60,7 +60,9 @@ pointing at `/api/docusign/webhook` (HMAC via `DOCUSIGN_CONNECT_HMAC_KEY`).
 
 ## ⚠️ Before real clients
 
-The services agreement is a **DRAFT adapted from a Texas template** and must be
-reviewed by a **New Mexico attorney**. Exemption amounts and the mill rate are
-`VERIFY`-flagged placeholders used only for estimates. See the design doc's
-"Launch gates" section.
+The services agreement and agent authorization are **New Mexico DRAFTS** and
+must be reviewed and approved by a **New Mexico attorney** before use with real
+clients — also confirm NM regulation of property-tax agents / contingency
+representation and enforceability of any lien clause. Exemption amounts and the
+mill rate are `VERIFY`-flagged placeholders used only for estimates. See the
+design doc's "Launch gates" section.

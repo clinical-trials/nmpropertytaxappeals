@@ -56,12 +56,13 @@ resolved → closed` (or `declined`).
 
 ## ⚠️ Launch gates (human handoff)
 
-- **Agreement text:** the provided contract was adapted from a **Texas**
-  template (appraisal district / ARB / Form 50-162). It has been reworded to NM
-  terms in `src/lib/engagement.ts` **as a DRAFT** and must be reviewed and
-  approved by a **New Mexico attorney** before use with real clients. Also
-  verify: NM regulation of property-tax agents / contingency representation, and
-  enforceability of the lien clause.
+- **Agreement text:** a **New Mexico** property tax services agreement + agent
+  authorization (County Assessor, County Valuation Protests Board, NMSA 1978
+  §§ 7-38-24..28), modeled on the Letter of Authorization / Consultant Agreement
+  template, rendered in `src/lib/engagement.ts`. Both carry a **DRAFT** banner
+  and must be reviewed and approved by a **New Mexico attorney** before use with
+  real clients. Also verify: NM regulation of property-tax agents / contingency
+  representation, and enforceability of any lien clause.
 - **Legal figures:** exemption dollar amounts and the Bernalillo mill rate are
   marked `VERIFY` in code and used only for soft estimates.
 - **DocuSign:** production credentials + a Connect webhook (HMAC) required to

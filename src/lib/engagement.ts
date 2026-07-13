@@ -22,10 +22,10 @@ export type AgreementRenderParams = {
 /**
  * New Mexico-adapted Property Tax Services Agreement.
  *
- * NOTE: This is a working draft adapted from a Texas template to NM terminology
- * (County Assessor, County Valuation Protests Board, NMSA 1978 §§ 7-38-24..28).
- * It carries a visible DRAFT banner and MUST be reviewed by a New Mexico
- * attorney before use with real clients.
+ * NOTE: New Mexico property tax services agreement (County Assessor, County
+ * Valuation Protests Board, NMSA 1978 §§ 7-38-24..28). It carries a visible
+ * DRAFT banner and MUST be reviewed and approved by a New Mexico attorney
+ * before use with real clients.
  */
 export function renderAgreementHtml(p: AgreementRenderParams): string {
   const scheduleRows = p.properties
@@ -53,7 +53,7 @@ export function renderAgreementHtml(p: AgreementRenderParams): string {
   .sig{margin-top:32px;border-top:1px solid #999;padding-top:12px;}
   small{color:#666;}
 </style></head><body>
-<div class="draft">DRAFT — adapted to New Mexico for review. Must be reviewed and approved by a New Mexico attorney before use with clients.</div>
+<div class="draft">DRAFT — New Mexico property tax services agreement. Pending review and approval by a New Mexico attorney before use with clients.</div>
 <h1>Property Tax Services Agreement</h1>
 <p style="text-align:center;"><small>NM Tax Appeals LLC, a New Mexico limited liability company ("Company")</small></p>
 
