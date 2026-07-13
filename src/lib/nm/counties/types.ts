@@ -7,7 +7,7 @@ export type FilingMethod = "in_person" | "mail" | "online";
 export type FormLink = { label: string; url: string };
 
 export type RefundClaim = {
-  /** Court where a missed-deadline claim for refund is filed. */
+  /** Court where a missed-deadline claim for refund is filed (locally-valued). */
   court: string;
   address?: string;
   room?: string;
@@ -16,6 +16,11 @@ export type RefundClaim = {
   deadlineNote: string;
   /** Payment prerequisite. */
   paymentNote?: string;
+  /**
+   * Where the claim is filed when the property was valued by the NM Taxation &
+   * Revenue Department (state-assessed) rather than the county assessor.
+   */
+  stateValuedNote?: string;
   forms?: FormLink[];
   selfHelp?: string;
 };

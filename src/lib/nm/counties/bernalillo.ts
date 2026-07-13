@@ -35,6 +35,8 @@ export const bernalillo: County = {
       "If the protest deadline was missed, a claim for refund may be filed until January 10 of the following year.",
     paymentNote:
       "Property tax payments must be current — pay the first half (due November 10, delinquent after December 10) before filing.",
+    stateValuedNote:
+      "If the property was valued by the New Mexico Taxation & Revenue Department (state-assessed) rather than the county assessor, the claim is filed in the District Court for Santa Fe County (the First Judicial District Court in Santa Fe).",
     forms: [
       {
         label: "Instructions for Refund of Property Taxes Paid",

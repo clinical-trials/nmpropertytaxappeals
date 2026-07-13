@@ -538,6 +538,11 @@ export default async function CaseDetail({
                     {county.refundClaim.paymentNote}
                   </p>
                 )}
+                {county?.refundClaim?.stateValuedNote && (
+                  <p className="mt-2 rounded-lg bg-sand-100/70 p-2 text-xs text-ink-soft">
+                    {county.refundClaim.stateValuedNote}
+                  </p>
+                )}
                 {county?.refundClaim?.forms &&
                   county.refundClaim.forms.length > 0 && (
                     <div className="mt-3 flex flex-col gap-1">
