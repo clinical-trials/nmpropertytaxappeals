@@ -605,8 +605,8 @@ function ResultView({
             The 30-day protest window has closed, but you can still challenge the
             value with a claim for refund — filed until{" "}
             <strong className="text-ink">January 10</strong>. Your first-half tax
-            payment must be current. If we take it on, we handle the court
-            filing.
+            payment (due <strong className="text-ink">November 10</strong>) must
+            be current. If we take it on, we handle the court filing.
           </p>
         </div>
       )}
