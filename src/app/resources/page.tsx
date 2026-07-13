@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getCounty, supportedCounties } from "@/lib/nm/counties";
+import { PROPERTY_TAX_PAYMENTS } from "@/lib/nm/law";
 
 export const metadata = {
   title: "New Mexico property tax protest resources — NM Tax Appeals",
@@ -133,6 +134,33 @@ export default function Resources() {
             </div>
           </section>
         )}
+
+        {/* Payment deadlines */}
+        <section className="mt-10">
+          <h2 className="font-display text-xl text-ink">
+            When property taxes are due
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+            New Mexico property taxes are paid in two halves:
+          </p>
+          <ul className="mt-3 space-y-2 text-sm text-ink-soft">
+            <li>
+              <strong className="text-ink">First half</strong> — due{" "}
+              {PROPERTY_TAX_PAYMENTS.firstHalf.dueLabel}, delinquent after{" "}
+              {PROPERTY_TAX_PAYMENTS.firstHalf.delinquentAfterLabel}.
+            </li>
+            <li>
+              <strong className="text-ink">Second half</strong> — due{" "}
+              {PROPERTY_TAX_PAYMENTS.secondHalf.dueLabel}, delinquent after{" "}
+              {PROPERTY_TAX_PAYMENTS.secondHalf.delinquentAfterLabel}.
+            </li>
+          </ul>
+          <p className="mt-3 text-xs text-ink-faint">
+            Protesting doesn&apos;t pause these due dates — keep payments current.
+            A claim for refund can only be filed once the first-half payment is
+            paid.
+          </p>
+        </section>
 
         {/* Counties we serve */}
         <section className="mt-10">

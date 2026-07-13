@@ -30,7 +30,7 @@ export const santaFe: County = {
     deadlineNote:
       "If the protest deadline was missed, a claim for refund may be filed until January 10 of the following year.",
     paymentNote:
-      "Property tax payments must be current — pay the first half of the tax bill before filing.",
+      "Property tax payments must be current — pay the first half (due November 10, delinquent after December 10) before filing.",
   },
   // VERIFY: Santa Fe residential mill rates vary by tax district.
   defaultMillRate: 30,
