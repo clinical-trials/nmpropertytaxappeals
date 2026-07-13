@@ -7,11 +7,11 @@ export default function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="mx-auto max-w-5xl px-6 pb-8 pt-10 sm:pt-16">
-        <p className="mb-4 text-sm font-medium uppercase tracking-widest text-clay">
-          New Mexico · Bernalillo County
+      <section className="mx-auto max-w-5xl px-5 pb-8 pt-8 sm:px-6 sm:pt-16">
+        <p className="mb-4 text-xs font-medium uppercase tracking-widest text-clay sm:text-sm">
+          New Mexico · Bernalillo &amp; Santa Fe counties
         </p>
-        <h1 className="max-w-3xl font-display text-4xl leading-[1.05] text-ink sm:text-6xl">
+        <h1 className="max-w-3xl font-display text-[2.1rem] leading-[1.08] text-ink sm:text-6xl sm:leading-[1.05]">
           Your property may be
           <br />
           over-assessed. We appeal it

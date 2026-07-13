@@ -6,6 +6,10 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { COUNTIES, getCounty } from "@/lib/nm/counties";
 import { evaluate, type EligibilityResult } from "@/lib/nm/eligibility";
 import { GROUND_LABELS, Ground } from "@/lib/enums";
+import {
+  renderServicesAgreement,
+  renderAgentAuthorization,
+} from "@/lib/documents";
 
 type Form = {
   countyId: string;
@@ -78,7 +82,9 @@ export default function IntakePage() {
     { caseId: string; eligibility: EligibilityResult } | null
   >(null);
   const [error, setError] = useState<string | null>(null);
-  const [signNote, setSignNote] = useState(false);
+  // Post-eligibility stages for the full client-side homeowner journey.
+  const [showAgreement, setShowAgreement] = useState(false);
+  const [signedName, setSignedName] = useState<string | null>(null);
 
   const county = getCounty(f.countyId);
   const countySupported = !!county?.supported;
@@ -146,21 +152,44 @@ export default function IntakePage() {
     }
   }
 
-  function proceedToSign() {
-    setSignNote(true);
-  }
-
   if (result) {
+    const taxYear = new Date().getFullYear();
+    // Confirmation screen (signed).
+    if (signedName) {
+      return (
+        <div>
+          <SiteHeader cta={false} />
+          <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6">
+            <DoneView form={f} taxYear={taxYear} signature={signedName} />
+          </div>
+        </div>
+      );
+    }
+    // Agreement review + sign.
+    if (showAgreement) {
+      return (
+        <div>
+          <SiteHeader cta={false} />
+          <div className="mx-auto max-w-2xl px-5 py-8 sm:px-6">
+            <AgreementView
+              form={f}
+              taxYear={taxYear}
+              isRefund={result.eligibility.track === "refund_claim"}
+              onSigned={(name) => setSignedName(name)}
+              onBack={() => setShowAgreement(false)}
+            />
+          </div>
+        </div>
+      );
+    }
+    // Eligibility result.
     return (
       <div>
         <SiteHeader cta={false} />
-        <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="mx-auto max-w-2xl px-5 py-10 sm:px-6">
           <ResultView
             eligibility={result.eligibility}
-            onProceed={proceedToSign}
-            submitting={submitting}
-            error={error}
-            signNote={signNote}
+            onProceed={() => setShowAgreement(true)}
           />
         </div>
       </div>
@@ -508,15 +537,9 @@ export default function IntakePage() {
 function ResultView({
   eligibility,
   onProceed,
-  submitting,
-  error,
-  signNote,
 }: {
   eligibility: EligibilityResult;
   onProceed: () => void;
-  submitting: boolean;
-  error: string | null;
-  signNote?: boolean;
 }) {
   const isRefund = eligibility.track === "refund_claim";
   const refundActionable =
@@ -526,7 +549,7 @@ function ResultView({
   const canProceed =
     eligibility.recommendation !== "deadline_passed" || refundActionable;
   return (
-    <div className="card p-8">
+    <div className="card p-6 sm:p-8">
       <span
         className={`pill ${
           eligibility.recommendation === "worth_pursuing"
@@ -593,43 +616,223 @@ function ResultView({
         reviews every case before we file anything.
       </div>
 
-      {error && (
-        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
-
-      {canProceed && !signNote && (
+      {canProceed && (
         <button
           className="btn-primary mt-6 w-full py-3 text-base"
           onClick={onProceed}
-          disabled={submitting}
         >
           {isRefund
             ? "Review & sign to start my refund claim"
             : "Review & sign the agreement"}
         </button>
       )}
-      {signNote && (
-        <div className="mt-6 rounded-xl border border-clay/30 bg-clay/5 p-4 text-sm text-ink-soft">
-          <p className="font-medium text-ink">This is the static prototype</p>
-          <p className="mt-1">
-            The next step — e-signing the services agreement and the county Agent
-            Authorization together, then handing the case to an operator — runs
-            in the full application (with a server + database). Reach out at{" "}
-            <a
-              href="mailto:support@newmexicoappeals.com"
-              className="font-medium text-clay hover:text-clay-dark"
-            >
-              support@newmexicoappeals.com
-            </a>{" "}
-            to move forward.
-          </p>
-        </div>
-      )}
       <p className="mt-3 text-center text-xs text-ink-faint">
         30% of your tax savings · no savings, no fee
       </p>
+    </div>
+  );
+}
+
+function AgreementView({
+  form,
+  taxYear,
+  isRefund,
+  onSigned,
+  onBack,
+}: {
+  form: Form;
+  taxYear: number;
+  isRefund: boolean;
+  onSigned: (name: string) => void;
+  onBack: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [consent, setConsent] = useState(false);
+  const county = getCounty(form.countyId);
+  const clientName =
+    `${form.firstName} ${form.lastName}`.trim() || form.ownerName;
+
+  const docs = [
+    {
+      title: "Property Tax Services Agreement",
+      sourceUrl: undefined as string | undefined,
+      html: renderServicesAgreement({
+        clientName,
+        feePercent: 30,
+        arbitrationUpliftPercent: 10,
+        taxYear,
+        propertyAddress: form.situsAddress,
+        ownerName: form.ownerName,
+      }),
+    },
+    {
+      title: `Agent Authorization — ${county?.name ?? "County"}`,
+      sourceUrl: county?.forms?.agentAuthorizationUrl,
+      html: renderAgentAuthorization({
+        ownerName: form.ownerName,
+        ownerMailingAddress: form.mailingAddress || form.situsAddress,
+        propertyAddress: form.situsAddress,
+        upc: form.upc,
+        countyName: county?.name ?? "County",
+        assessorOffice: county?.assessor?.office ?? "County Assessor",
+        taxYear,
+        sourceUrl: county?.forms?.agentAuthorizationUrl,
+      }),
+    },
+  ];
+
+  return (
+    <div>
+      <button
+        onClick={onBack}
+        className="mb-3 text-sm text-ink-faint hover:text-ink"
+      >
+        ← Back
+      </button>
+      <h1 className="font-display text-2xl text-ink">
+        Review &amp; sign — 2 documents
+      </h1>
+      <p className="mt-1 text-sm text-ink-faint">
+        {isRefund
+          ? "These engage us for your claim for refund."
+          : "These make us your authorized representative for the protest."}{" "}
+        One signature covers both.
+      </p>
+
+      <div className="mt-5 space-y-5">
+        {docs.map((doc, i) => (
+          <div key={i}>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-display text-lg text-ink">
+                {i + 1}. {doc.title}
+              </h2>
+              {doc.sourceUrl && (
+                <a
+                  href={doc.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-clay hover:text-clay-dark"
+                >
+                  Official county form ↗
+                </a>
+              )}
+            </div>
+            <div className="card overflow-hidden">
+              <iframe
+                title={doc.title}
+                srcDoc={doc.html}
+                className="h-[58vh] max-h-[520px] w-full bg-white"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card mt-6 p-5 sm:p-6">
+        <label className="label">Type your full legal name to sign</label>
+        <input
+          className="field"
+          placeholder="e.g. Rosa Trujillo"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <label className="mt-4 flex items-start gap-3 text-sm text-ink-soft">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+          />
+          <span>
+            I agree to the terms above and consent to sign electronically. (In
+            the full service, your IP and timestamp are recorded and a copy is
+            emailed to you.)
+          </span>
+        </label>
+        <button
+          className="btn-primary mt-5 w-full py-3 text-base"
+          disabled={name.trim().length < 2 || !consent}
+          onClick={() => onSigned(name.trim())}
+        >
+          Adopt &amp; sign both documents
+        </button>
+        <p className="mt-2 text-center text-xs text-ink-faint">
+          Demo signing — no data leaves your browser.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function DoneView({
+  form,
+  taxYear,
+  signature,
+}: {
+  form: Form;
+  taxYear: number;
+  signature: string;
+}) {
+  const county = getCounty(form.countyId);
+  return (
+    <div>
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
+        ✓
+      </div>
+      <h1 className="mt-6 text-center font-display text-3xl text-ink">
+        You&apos;re all set
+      </h1>
+      <p className="mt-3 text-center text-ink-soft">
+        Thanks, {form.firstName || form.ownerName}. You&apos;ve signed the
+        services agreement and the {county?.name ?? "county"} Agent
+        Authorization — that makes NM Tax Appeals your authorized representative.
+      </p>
+
+      <div className="card mt-6 p-5 text-sm sm:p-6">
+        <p className="label">Your engagement</p>
+        <dl className="space-y-2">
+          <SummaryRow label="Signed by" value={signature} />
+          <SummaryRow label="Property" value={form.situsAddress} />
+          <SummaryRow label="County" value={county?.name ?? form.countyId} />
+          <SummaryRow label="Tax year" value={String(taxYear)} />
+          <SummaryRow label="Fee" value="30% of tax saved · no savings, no fee" />
+        </dl>
+      </div>
+
+      <div className="mt-5 rounded-xl bg-sand-100/70 p-4 text-sm text-ink-soft">
+        <p className="font-medium text-ink">What happens next</p>
+        <ol className="mt-2 list-decimal space-y-1 pl-4">
+          <li>We review your case and pull comparable sales.</li>
+          <li>
+            We file the protest with the {county?.assessor?.office ?? "assessor"}{" "}
+            before your deadline.
+          </li>
+          <li>
+            We negotiate, and go to the{" "}
+            {county?.hearingBody ?? "valuation protests board"} if needed.
+          </li>
+          <li>You pay only if we lower your bill.</li>
+        </ol>
+      </div>
+
+      <p className="mt-5 text-center text-xs text-ink-faint">
+        This is an interactive demo. In the live service an operator takes over
+        here and a signed copy is emailed to you.
+      </p>
+      <div className="mt-6 text-center">
+        <Link href="/" className="btn-ghost">
+          Back to home
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <dt className="text-ink-faint">{label}</dt>
+      <dd className="text-right font-medium text-ink">{value}</dd>
     </div>
   );
 }
