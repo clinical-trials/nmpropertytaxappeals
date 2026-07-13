@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ExplainerVideo } from "@/components/ExplainerVideo";
 
 export default function Home() {
   return (
@@ -34,21 +35,11 @@ export default function Home() {
         </div>
 
         {/* Explainer video */}
-        <div className="mt-10 overflow-hidden rounded-2xl border border-ink/10 bg-black/5 shadow-sm">
-          <video
-            className="h-auto w-full"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            controls
-          >
-            <source
-              src="/nmpropertytaxappeals/property-tax-appeal.mp4"
-              type="video/mp4"
-            />
-          </video>
+        <div className="mt-10">
+          <ExplainerVideo
+            videoSrc="/nmpropertytaxappeals/property-tax-appeal.mp4"
+            musicSrc="/nmpropertytaxappeals/property-tax-appeal-music.mp3"
+          />
         </div>
       </section>
 

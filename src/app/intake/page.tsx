@@ -923,6 +923,45 @@ function DoneView({
 }) {
   const county = getCounty(form.countyId);
   const docCount = form.attachments.length;
+  const clientName =
+    `${form.firstName} ${form.lastName}`.trim() || form.ownerName;
+
+  function downloadSignedDocs() {
+    const services = renderServicesAgreement({
+      clientName,
+      feePercent: 30,
+      arbitrationUpliftPercent: 10,
+      taxYear,
+      propertyAddress: form.situsAddress,
+      ownerName: form.ownerName,
+      signature,
+    });
+    const agent = renderAgentAuthorization({
+      ownerName: form.ownerName,
+      ownerMailingAddress: form.mailingAddress || form.situsAddress,
+      ownerPhone: form.phone,
+      ownerEmail: form.email,
+      propertyAddress: form.situsAddress,
+      upc: form.upc,
+      countyName: county?.name ?? "County",
+      assessorOffice: county?.assessor?.office ?? "County Assessor",
+      taxYear,
+      sourceUrl: county?.forms?.agentAuthorizationUrl,
+      signature,
+    });
+    const combined =
+      services + '<div style="page-break-before:always"></div>' + agent;
+    const blob = new Blob([combined], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "NM-Tax-Appeals-signed-documents.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div>
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
@@ -936,6 +975,25 @@ function DoneView({
         services agreement and the {county?.name ?? "county"} Agent
         Authorization — that makes NM Tax Appeals your authorized representative.
       </p>
+
+      <div className="mt-6 rounded-xl border border-clay/25 bg-clay/5 p-4 text-center">
+        <p className="text-sm text-ink-soft">
+          Your signed documents are ready.
+        </p>
+        <button
+          onClick={downloadSignedDocs}
+          className="btn-primary mt-3 w-full py-3"
+        >
+          📄 Download your signed copy
+        </button>
+        <p className="mt-2 text-xs text-ink-faint">
+          A copy is also sent to{" "}
+          <span className="font-medium text-ink">
+            {form.email || "your email"}
+          </span>{" "}
+          in the live service.
+        </p>
+      </div>
 
       <div className="card mt-6 p-5 text-sm sm:p-6">
         <p className="label">Your engagement</p>
