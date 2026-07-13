@@ -33,6 +33,15 @@ export const santaFe: County = {
       "Property tax payments must be current — pay the first half (due November 10, delinquent after December 10) before filing.",
     stateValuedNote:
       "If the property was valued by the New Mexico Taxation & Revenue Department (state-assessed) rather than the county assessor, the claim is filed in the District Court for Santa Fe County (the First Judicial District Court in Santa Fe).",
+    parties: {
+      plaintiff: "The property owner(s) filing the complaint for refund.",
+      // VERIFY: current Santa Fe County Assessor name.
+      defendantLocallyValued:
+        "The county assessor (current Santa Fe County Assessor).",
+      // VERIFY: exact named state defendant.
+      defendantStateValued:
+        "The New Mexico Taxation & Revenue Department (confirm the exact named defendant).",
+    },
   },
   // VERIFY: Santa Fe residential mill rates vary by tax district.
   defaultMillRate: 30,

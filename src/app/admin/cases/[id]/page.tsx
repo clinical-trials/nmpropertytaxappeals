@@ -543,6 +543,33 @@ export default async function CaseDetail({
                     {county.refundClaim.stateValuedNote}
                   </p>
                 )}
+                {county?.refundClaim?.parties && (
+                  <div className="mt-3 border-t border-ink/10 pt-3">
+                    <p className="label">Parties to the complaint</p>
+                    <dl className="space-y-1.5 text-xs text-ink-soft">
+                      <div>
+                        <dt className="font-medium text-ink">Plaintiff</dt>
+                        <dd>{county.refundClaim.parties.plaintiff}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-medium text-ink">
+                          Defendant (county-valued)
+                        </dt>
+                        <dd>{county.refundClaim.parties.defendantLocallyValued}</dd>
+                      </div>
+                      {county.refundClaim.parties.defendantStateValued && (
+                        <div>
+                          <dt className="font-medium text-ink">
+                            Defendant (state-valued)
+                          </dt>
+                          <dd>
+                            {county.refundClaim.parties.defendantStateValued}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+                )}
                 {county?.refundClaim?.forms &&
                   county.refundClaim.forms.length > 0 && (
                     <div className="mt-3 flex flex-col gap-1">

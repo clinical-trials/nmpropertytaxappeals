@@ -21,6 +21,15 @@ export type RefundClaim = {
    * Revenue Department (state-assessed) rather than the county assessor.
    */
   stateValuedNote?: string;
+  /** Parties to the district-court complaint for refund. */
+  parties?: {
+    /** Who files (property owner). */
+    plaintiff: string;
+    /** Defendant when the property was valued by the county assessor. */
+    defendantLocallyValued: string;
+    /** Defendant when the property was valued by the state (NM T&RD). */
+    defendantStateValued?: string;
+  };
   forms?: FormLink[];
   selfHelp?: string;
 };

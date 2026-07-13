@@ -37,6 +37,14 @@ export const bernalillo: County = {
       "Property tax payments must be current — pay the first half (due November 10, delinquent after December 10) before filing.",
     stateValuedNote:
       "If the property was valued by the New Mexico Taxation & Revenue Department (state-assessed) rather than the county assessor, the claim is filed in the District Court for Santa Fe County (the First Judicial District Court in Santa Fe).",
+    parties: {
+      plaintiff: "The property owner(s) filing the complaint for refund.",
+      defendantLocallyValued:
+        "The county assessor. Current Bernalillo County Assessor: Damian R. Lara.",
+      // VERIFY: exact named state defendant (client note was cut off).
+      defendantStateValued:
+        "The New Mexico Taxation & Revenue Department (confirm the exact named defendant).",
+    },
     forms: [
       {
         label: "Instructions for Refund of Property Taxes Paid",
