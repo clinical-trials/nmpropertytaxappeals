@@ -73,6 +73,20 @@ export const bernalillo: County = {
     // verified English 2026 URL (only the 2025 pamphlet). Do not invent —
     // populate pamphletUrl only once the real URL is verified.
   },
+  reference: {
+    resolutionNote:
+      "~80% of protests resolve by agreement between the Assessor and the owner after individual review.",
+    massAppraisalNote:
+      "The county notes mass appraisal may inaccurately value roughly 5–10% of properties.",
+    hearingSchedule: [
+      "July — typically the 1st and 4th weeks",
+      "August — typically the 1st and 3rd weeks",
+      "September — typically the 2nd and 3rd weeks",
+      "2025 cycle overflow (~1,300 extra protests): hearings also ran in October and extended into 2026 (Jan–Mar), concluding with additional hearings in June.",
+    ],
+    legalBasis:
+      "NMSA 1978 § 7-38-24. NOV mailed ~April 1; written protest to the Assessor within 30 days; heard by the Valuation Protests Board. Miss the window → claim for refund in district court within 60 days of the tax-bill due date (≈ Jan 10). Residential value generally capped at 3%/yr (§ 7-36-21.2) absent change of ownership or new construction. Assessor: (505) 222-3700.",
+  },
   specialDeadlines: [
     {
       label: "Business Personal Property (BPP) protests",

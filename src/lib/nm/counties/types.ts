@@ -69,5 +69,16 @@ export type County = {
   };
   /** Extra protest-window notes (e.g. BPP/manufactured homes deadlines). */
   specialDeadlines?: { label: string; note: string }[];
+  /** Operator reference facts, for validating assumptions in the back office. */
+  reference?: {
+    /** Typical resolution outcome, e.g. ~80% settle by agreement. */
+    resolutionNote?: string;
+    /** Mass-appraisal accuracy note, e.g. 5–10% may be misvalued. */
+    massAppraisalNote?: string;
+    /** When the valuation protests board typically hears cases. */
+    hearingSchedule?: string[];
+    /** Statutory basis + key deadlines, in one place to sanity-check against. */
+    legalBasis?: string;
+  };
   notes?: string;
 };

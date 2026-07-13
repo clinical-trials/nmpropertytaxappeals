@@ -457,6 +457,44 @@ export default async function CaseDetail({
               </div>
             </div>
 
+            {/* Hearing schedule & validation reference */}
+            {county?.reference && (
+              <div className="card p-6 text-sm">
+                <h2 className="font-display text-lg text-ink">
+                  Hearing schedule &amp; reference
+                </h2>
+                {county.reference.resolutionNote && (
+                  <p className="mt-3 text-ink-soft">
+                    {county.reference.resolutionNote}
+                  </p>
+                )}
+                {county.reference.massAppraisalNote && (
+                  <p className="mt-2 text-ink-soft">
+                    {county.reference.massAppraisalNote}
+                  </p>
+                )}
+                {county.reference.hearingSchedule &&
+                  county.reference.hearingSchedule.length > 0 && (
+                    <>
+                      <p className="label mt-4">Typical hearing windows</p>
+                      <ul className="space-y-1.5 text-ink-soft">
+                        {county.reference.hearingSchedule.map((h, i) => (
+                          <li key={i} className="flex gap-2">
+                            <span className="text-clay">•</span>
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                {county.reference.legalBasis && (
+                  <p className="mt-4 border-t border-ink/10 pt-3 text-xs text-ink-faint">
+                    {county.reference.legalBasis}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Claim for refund (missed-deadline path) */}
             {(kase.caseType === "refund_claim" || county?.refundClaim) && (
               <div
