@@ -14,8 +14,10 @@ export const bernalillo: County = {
     filingMethods: ["online", "in_person", "mail"],
     protestFiledWith:
       "Bernalillo County Assessor (Protest / Petition), then heard by the county valuation protests board",
-    propertySearchUrl: "https://www.bernco.gov/assessor/property-record-search/",
-    appealPortalUrl: "https://www.bernco.gov/assessor/",
+    propertySearchUrl:
+      "https://www.bernco.gov/assessor/find-a-property/assessor-property-record-search-portal/",
+    appealPortalUrl:
+      "https://www.bernco.gov/assessor/find-a-property/assessor-property-record-search-portal/",
   },
   hearingBody: "Bernalillo County Valuation Protests Board",
   protestFilingWindowNote:
@@ -60,7 +62,7 @@ export const bernalillo: County = {
   parcelIdLabel: "UPC (Uniform Parcel Code)",
   forms: {
     agentAuthorizationUrl:
-      "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/03/Agent-Authorization.pdf",
+      "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/01/Agent-Authorization.pdf",
     protestFormUrl:
       "https://www.bernco.gov/assessor/wp-content/uploads/sites/44/2026/04/2026_Protest_Form-0409.pdf",
     residentialInfoUrl:

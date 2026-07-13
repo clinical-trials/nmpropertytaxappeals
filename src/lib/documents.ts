@@ -59,7 +59,7 @@ export function renderServicesAgreement(p: ServicesAgreementParams): string {
   return `<!doctype html><html><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>${DOC_STYLE}</style></head><body>
-<div class="draft">DRAFT — adapted to New Mexico for review. Must be reviewed and approved by a New Mexico attorney before use with clients.</div>
+<div class="draft">DRAFT — New Mexico property tax services agreement. Pending review and approval by a New Mexico attorney before use with clients.</div>
 <h1>Property Tax Services Agreement</h1>
 <p class="sub">NM Tax Appeals LLC, a New Mexico limited liability company ("Company")</p>
 <p>This Property Tax Services Agreement is made as of the Effective Date (<strong>${eff}</strong>) by and between the undersigned ("Client") and Company.</p>

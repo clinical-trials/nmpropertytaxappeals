@@ -86,8 +86,8 @@ export default function Home() {
             },
             {
               n: "03",
-              t: "We do the rest",
-              d: "We file the protest, argue the comps, negotiate, and go to the valuation protests board if needed.",
+              t: "We do the rest — every year",
+              d: "We file the protest, argue the comps, negotiate, and go to the valuation protests board if needed. Once we win, we automatically re-appeal each year to keep your value in check — until you tell us to stop.",
             },
           ].map((s) => (
             <div key={s.n} className="card p-6">
