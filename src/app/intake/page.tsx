@@ -936,6 +936,18 @@ function DoneView({
   const target =
     toInt(form.purchasePrice) ??
     (assessed != null ? Math.round((assessed * 0.9) / 100) * 100 : null);
+  const enclosures = [
+    "3–5 comparable sales, same area, last 6–12 months (prepared by NM Tax Appeals)",
+    ...(form.attachments.length
+      ? [`${form.attachments.length} photo(s)/document(s) you provided`]
+      : []),
+    ...(form.maintenanceIssues.length
+      ? [`Condition issues: ${form.maintenanceIssues.join(", ")}`]
+      : []),
+    ...(form.purchasePrice
+      ? ["Closing documents (recent purchase below noticed value)"]
+      : []),
+  ];
   const petitionText = generatePetition({
     countyId: form.countyId,
     taxYear,
@@ -946,6 +958,7 @@ function DoneView({
     initialAssessedValue: assessed,
     targetValue: target,
     grounds,
+    enclosures,
   });
 
   function downloadPetition() {

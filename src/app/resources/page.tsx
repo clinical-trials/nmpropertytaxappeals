@@ -90,6 +90,40 @@ export default function Resources() {
           </div>
         </section>
 
+        {/* Evidence that wins */}
+        <section className="mt-10">
+          <h2 className="font-display text-xl text-ink">
+            Evidence that wins an appeal
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+            The Valuation Protests Board decides on facts and market data. In
+            rough order of weight:
+          </p>
+          <ul className="mt-4 space-y-2 text-sm text-ink-soft">
+            {[
+              "3–5 comparable sales below your value (last 6–12 months, same area, within ~10–20% of your size, age and condition)",
+              "Your property record card, with any errors highlighted (square footage, beds/baths, garage, condition, lot size)",
+              "Photos of condition issues the mass appraisal missed — roof, foundation, plumbing, electrical, A/C",
+              "A recent appraisal (refinance or purchase) and repair estimates for significant defects",
+              "Closing documents if you bought recently for less than the noticed value",
+            ].map((item) => (
+              <li key={item} className="flex gap-2">
+                <span className="text-clay">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 rounded-xl bg-sand-100/70 p-4 text-sm leading-relaxed text-ink-soft">
+            <p>
+              <strong className="text-ink">Keep it factual.</strong> Boards weigh
+              market evidence and property characteristics — not personal
+              finances, the cost of living, or how APS, UNMH, CNM, AMAFCA or MRGCD
+              spend. Don&apos;t appeal only because the bill is high; appeal when
+              the value is wrong.
+            </p>
+          </div>
+        </section>
+
         {/* Tax-saving programs */}
         <section className="mt-10">
           <h2 className="font-display text-xl text-ink">

@@ -17,6 +17,8 @@ export type PetitionInput = {
   targetValue?: number | null;
   grounds: Ground[];
   representativeName?: string;
+  /** Evidence packet items (comps, photos, condition, appraisal, record fixes). */
+  enclosures?: string[];
 };
 
 export function generatePetition(input: PetitionInput): string {
@@ -77,6 +79,15 @@ export function generatePetition(input: PetitionInput): string {
     `Upon receipt, the assessor will schedule a hearing before the ${hearingBody}`,
     `and provide notice by certified mail at least 15 days beforehand`,
     `(§ 7-38-24(C)); an informal conference may be held first (§ 7-38-24(D)).`,
+    ``,
+    `ENCLOSURES (evidence packet)`,
+    ...(input.enclosures && input.enclosures.length
+      ? input.enclosures.map((e) => `  • ${e}`)
+      : [
+          `  • 3–5 comparable sales (last 6–12 months, same area, ±10–20% size)`,
+          `  • Property record card with any errors highlighted`,
+          `  • Photos of condition issues; repair estimates`,
+        ]),
     ``,
     `Authorized representative: ${rep}`,
     `Date filed: ____________________`,
