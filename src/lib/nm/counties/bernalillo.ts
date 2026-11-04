@@ -26,6 +26,16 @@ export const bernalillo: County = {
     location: "415 Silver Avenue SW, Albuquerque, NM 87102",
     mailingAddress:
       "Bernalillo County Treasurer, P.O. Box 27800, Albuquerque, NM 87125-7800",
+    paymentOnlineUrl: "https://paydici.com/bernalillo-county-nm/search/landing",
+    paymentFeesNote:
+      "Service fees: E-check $0.45 (online), debit $3.50, credit 2.29% (min $1.50). Monthly and automatic-payment plans available.",
+    overpaymentRefund: {
+      email: "TRRefunds@bernco.gov",
+      fax: "(505) 462-9768",
+      formUrl:
+        "https://www.bernco.gov/treasurer/wp-content/uploads/sites/49/2026/09/Updated-Fillable-Property-Tax-Refund-Request_Sept-2026-1.pdf",
+      mail: "P.O. Box 27800, Albuquerque, NM 87125-7800 (or 415 Silver Ave SW)",
+    },
   },
   hearingBody: "Bernalillo County Valuation Protests Board",
   protestFilingWindowNote:

@@ -20,10 +20,34 @@ export const RESIDENTIAL_VALUATION_CAP_PCT = 3; // NMSA 1978 § 7-36-21.2
  * claim for refund (see county.refundClaim).
  */
 export const PROPERTY_TAX_PAYMENTS = {
-  billsMailedLabel: "November 1",
-  firstHalf: { dueLabel: "November 10", delinquentAfterLabel: "December 10" },
-  secondHalf: { dueLabel: "April 10", delinquentAfterLabel: "May 10" },
+  billsMailedLabel: "November 1", // Treasurer sends bills — § 7-38-36
+  firstHalf: { dueLabel: "November 10", delinquentAfterLabel: "December 10" }, // due § 7-38-38; interest § 7-38-49
+  secondHalf: { dueLabel: "April 10", delinquentAfterLabel: "May 10" }, // § 7-38-38 / § 7-38-49
+  refundClaimDeadlineLabel: "January 10 (following year)", // § 7-38-40
 } as const;
+
+/**
+ * State-assessed property (valued by the NM Taxation & Revenue Property Tax
+ * Division, not a county assessor) — a separate appeal track.
+ * Verified against the NM T&RD State Assessed Property Bureau appeal page and
+ * its "Important Dates" sheet (justia/nmonesource block automated fetch; a NM
+ * attorney should still confirm before client use).
+ */
+export const STATE_ASSESSED_APPEAL = {
+  statutes: "NMSA 1978 §§ 7-38-21.1 & 7-38-22",
+  windowDays: 30, // 30 days after the Division ISSUES the Notice of Value (§ 7-38-20, by May 1)
+  /** Protest to the Administrative Hearings Office, OR claim for refund in
+   *  Santa Fe County District Court after paying — not both. */
+  ahoEmail: "Tax.Pleadings@aho.nm.gov",
+  ahoCopyEmail: "NMTRD.SAPBprotests@tax.nm.gov",
+  refundCourt: "Santa Fe County District Court (First Judicial District)",
+  note: "If you file a protest with the AHO, you cannot also pursue a district-court refund claim.",
+} as const;
+
+/** Statewide tax-district / mill-rate map — source for per-county rates as we
+ *  expand beyond Bernalillo + Santa Fe (rates vary widely by district). */
+export const NM_TAX_RATE_MAP_URL =
+  "https://experience.arcgis.com/experience/95ab1c7fc5074669ad6d4c021d03acab/";
 
 export type Exemption = {
   slug: string;

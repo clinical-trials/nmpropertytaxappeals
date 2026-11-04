@@ -47,6 +47,17 @@ export type County = {
     hours?: string;
     location?: string;
     mailingAddress?: string;
+    /** Online payment portal. */
+    paymentOnlineUrl?: string;
+    /** Service-fee note for online/in-person card payments. */
+    paymentFeesNote?: string;
+    /** Administrative overpayment-refund request (e.g. after a successful protest). */
+    overpaymentRefund?: {
+      email?: string;
+      fax?: string;
+      formUrl?: string;
+      mail?: string;
+    };
   };
   /** Name of the body that hears formal protests. */
   hearingBody?: string;
