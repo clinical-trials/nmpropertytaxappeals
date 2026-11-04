@@ -10,6 +10,7 @@ import {
   renderServicesAgreement,
   renderAgentAuthorization,
 } from "@/lib/documents";
+import { generatePetition } from "@/lib/petition";
 
 type Form = {
   countyId: string;
@@ -225,6 +226,7 @@ export default function IntakePage() {
               form={f}
               taxYear={taxYear}
               signature={signedName}
+              grounds={result.eligibility.grounds}
               onAddAnother={addAnother}
             />
           </div>
@@ -914,17 +916,49 @@ function DoneView({
   form,
   taxYear,
   signature,
+  grounds,
   onAddAnother,
 }: {
   form: Form;
   taxYear: number;
   signature: string;
+  grounds: Ground[];
   onAddAnother: () => void;
 }) {
   const county = getCounty(form.countyId);
   const docCount = form.attachments.length;
   const clientName =
     `${form.firstName} ${form.lastName}`.trim() || form.ownerName;
+
+  // Turn the parcel + intake data into the actual protest petition, pre-filled
+  // and ready for NM Tax Appeals to file as the owner's authorized rep.
+  const assessed = toInt(form.fullValue);
+  const target =
+    toInt(form.purchasePrice) ??
+    (assessed != null ? Math.round((assessed * 0.9) / 100) * 100 : null);
+  const petitionText = generatePetition({
+    countyId: form.countyId,
+    taxYear,
+    ownerName: form.ownerName,
+    situsAddress: form.situsAddress,
+    upc: form.upc,
+    mailingAddress: form.mailingAddress,
+    initialAssessedValue: assessed,
+    targetValue: target,
+    grounds,
+  });
+
+  function downloadPetition() {
+    const blob = new Blob([petitionText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `NM-Tax-Appeals-protest-petition-${taxYear}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 
   function downloadSignedDocs() {
     const services = renderServicesAgreement({
@@ -1018,19 +1052,66 @@ function DoneView({
         </dl>
       </div>
 
+      {/* The prepared appeal — parcel data turned into a filable petition. */}
+      <div className="card mt-6 p-5 text-sm sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <p className="label mb-0">Your protest petition — prepared</p>
+          <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+            Ready to file
+          </span>
+        </div>
+        <p className="mt-2 text-ink-soft">
+          Built from your parcel ({county?.parcelIdLabel ?? "UPC"}:{" "}
+          <span className="font-medium text-ink">
+            {form.upc || "to be looked up"}
+          </span>
+          ), structured to meet NMSA 1978 § 7-38-24. We file it as your
+          authorized representative.
+        </p>
+        <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-sand-100/70 p-3 text-[11px] leading-relaxed text-ink-soft whitespace-pre-wrap">
+          {petitionText}
+        </pre>
+        <button
+          onClick={downloadPetition}
+          className="btn-ghost mt-3 w-full py-2.5"
+        >
+          ⬇︎ Download the petition
+        </button>
+      </div>
+
       <div className="mt-5 rounded-xl bg-sand-100/70 p-4 text-sm text-ink-soft">
-        <p className="font-medium text-ink">What happens next</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-4">
-          <li>We review your case and pull comparable sales.</li>
-          <li>
-            We file the protest with the {county?.assessor?.office ?? "assessor"}{" "}
-            before your deadline.
-          </li>
-          <li>
-            We negotiate, and go to the{" "}
-            {county?.hearingBody ?? "valuation protests board"} if needed.
-          </li>
-          <li>You pay only if we lower your bill.</li>
+        <p className="font-medium text-ink">From here, we file your appeal</p>
+        <p className="mt-2">
+          We pull comparable sales, weigh condition and the 3% residential cap,
+          and check for exemptions you may have missed — then file the petition
+          with the {county?.assessor?.office ?? "assessor"} as your authorized
+          representative before your deadline, and go to the{" "}
+          {county?.hearingBody ?? "valuation protests board"} if needed.
+        </p>
+        <p className="mt-2">
+          By securely providing uploaded photos of your home, you help us build
+          an even stronger case. You pay only if we lower your bill.
+        </p>
+        <ol className="mt-3 flex flex-wrap gap-2 text-xs">
+          {[
+            ["Signed", true],
+            ["Petition prepared", true],
+            ["Filed with assessor", false],
+            ["Hearing / negotiation", false],
+            ["Resolved", false],
+          ].map(([label, done]) => (
+            <li
+              key={label as string}
+              className={`rounded-full px-2.5 py-1 ${
+                done
+                  ? "bg-green-100 font-medium text-green-700"
+                  : "bg-ink/5 text-ink-faint"
+              }`}
+            >
+              {done ? "✓ " : ""}
+              {label as string}
+            </li>
+          ))}
         </ol>
       </div>
 
