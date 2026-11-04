@@ -197,7 +197,8 @@ export default function Resources() {
             When property taxes are due
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            New Mexico property taxes are paid in two halves:
+            Bills are mailed around {PROPERTY_TAX_PAYMENTS.billsMailedLabel}, then
+            paid in two halves:
           </p>
           <ul className="mt-3 space-y-2 text-sm text-ink-soft">
             <li>

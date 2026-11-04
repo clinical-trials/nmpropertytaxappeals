@@ -20,6 +20,7 @@ export const RESIDENTIAL_VALUATION_CAP_PCT = 3; // NMSA 1978 § 7-36-21.2
  * claim for refund (see county.refundClaim).
  */
 export const PROPERTY_TAX_PAYMENTS = {
+  billsMailedLabel: "November 1",
   firstHalf: { dueLabel: "November 10", delinquentAfterLabel: "December 10" },
   secondHalf: { dueLabel: "April 10", delinquentAfterLabel: "May 10" },
 } as const;
