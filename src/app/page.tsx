@@ -34,6 +34,30 @@ export default function Home() {
           </span>
         </div>
 
+        {/* Stats band */}
+        <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {[
+            ["30–60%", "of U.S. properties are estimated to be over-assessed"],
+            ["30–50%", "of homeowners who appeal win a reduction"],
+            ["<5%", "of taxpayers ever challenge their assessment"],
+          ].map(([stat, label]) => (
+            <div
+              key={stat}
+              className="rounded-xl border border-clay/20 bg-clay/5 px-4 py-4"
+            >
+              <div className="font-display text-3xl font-semibold text-clay">
+                {stat}
+              </div>
+              <p className="mt-1 text-sm leading-snug text-ink-soft">{label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-ink-faint">
+          National (U.S.) estimates — National Taxpayers Union Foundation; no
+          New Mexico-specific rate is published, so we don&apos;t claim one. We
+          work on contingency: you pay only if we lower your bill.
+        </p>
+
         {/* Explainer video */}
         <div className="mt-10">
           <ExplainerVideo

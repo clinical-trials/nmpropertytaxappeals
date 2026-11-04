@@ -30,6 +30,7 @@ type Form = {
   maintenanceIssues: string[];
   attachments: string[];
   conditionNotes: string;
+  wantsRepairEstimateHelp: boolean;
   qualifiesHeadOfFamily: boolean;
   qualifiesVeteran: boolean;
   qualifiesDisabledVeteran: boolean;
@@ -58,6 +59,7 @@ const EMPTY: Form = {
   purchaseDate: "",
   hasConditionIssues: false,
   maintenanceIssues: [],
+  wantsRepairEstimateHelp: false,
   attachments: [],
   conditionNotes: "",
   qualifiesHeadOfFamily: false,
@@ -495,13 +497,33 @@ export default function IntakePage() {
                   ))}
                 </div>
                 {f.maintenanceIssues.length > 0 && (
-                  <textarea
-                    className="field mt-3"
-                    rows={3}
-                    placeholder="Briefly describe the issues (age, severity, any repair estimates)…"
-                    value={f.conditionNotes}
-                    onChange={(e) => set("conditionNotes", e.target.value)}
-                  />
+                  <>
+                    <textarea
+                      className="field mt-3"
+                      rows={3}
+                      placeholder="Briefly describe the issues (age, severity, any repair estimates)…"
+                      value={f.conditionNotes}
+                      onChange={(e) => set("conditionNotes", e.target.value)}
+                    />
+                    <label className="mt-3 flex items-start gap-2 rounded-xl bg-sand-100/70 p-3 text-sm">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={f.wantsRepairEstimateHelp}
+                        onChange={(e) =>
+                          set("wantsRepairEstimateHelp", e.target.checked)
+                        }
+                      />
+                      <span className="text-ink-soft">
+                        <span className="font-medium text-ink">
+                          No repair estimate yet? We&apos;ll help you get one.
+                        </span>{" "}
+                        Check this and we&apos;ll arrange a licensed-contractor
+                        estimate or inspection for the issues above — photos are
+                        enough to start, and the estimate strengthens your case.
+                      </span>
+                    </label>
+                  </>
                 )}
               </div>
 
@@ -946,6 +968,9 @@ function DoneView({
       : []),
     ...(form.purchasePrice
       ? ["Closing documents (recent purchase below noticed value)"]
+      : []),
+    ...(form.wantsRepairEstimateHelp
+      ? ["Contractor repair estimate (NM Tax Appeals to arrange)"]
       : []),
   ];
   const petitionText = generatePetition({
