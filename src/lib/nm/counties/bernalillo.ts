@@ -40,9 +40,9 @@ export const bernalillo: County = {
     room: "Room 119",
     filingFee: "$132.00 (cash, credit/debit — not Amex, money order, or cashier's check to the Clerk of the District Court)",
     deadlineNote:
-      "If the protest deadline was missed, a claim for refund may be filed until January 10 of the following year.",
+      "If no protest was filed, NMSA 1978 §§ 7-38-39 & -40 require a claim for refund in District Court no later than the 60th day after the first installment is due (≈ January 10). If a protest WAS filed and is pending, still pay the first half by December 10: if the protest is approved a corrected bill issues and any overpayment is refunded; if denied, you've avoided late fees.",
     paymentNote:
-      "Property tax payments must be current — pay the first half (due November 10, delinquent after December 10) before filing.",
+      "You must pay the amount due on the bill before filing a claim for refund — pay the first half (due November 10, delinquent after December 10) first.",
     forms: [
       {
         label: "Instructions for Refund of Property Taxes Paid",
