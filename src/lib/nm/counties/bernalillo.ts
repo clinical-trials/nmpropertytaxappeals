@@ -15,9 +15,8 @@ export const bernalillo: County = {
     protestFiledWith:
       "Bernalillo County Assessor (Protest / Petition), then heard by the county valuation protests board",
     propertySearchUrl:
-      "https://www.bernco.gov/assessor/find-a-property/assessor-property-record-search-portal/",
-    appealPortalUrl:
-      "https://www.bernco.gov/assessor/find-a-property/assessor-property-record-search-portal/",
+      "https://assessor.bernco.gov/public.access/search/commonsearch.aspx?mode=realprop",
+    appealPortalUrl: "https://www.bernco.gov/assessor/protest-process/",
   },
   hearingBody: "Bernalillo County Valuation Protests Board",
   protestFilingWindowNote:
@@ -56,9 +55,17 @@ export const bernalillo: County = {
     selfHelp:
       "Second Judicial District Court Self-Help Center: (505) 841-6702 · albdselfhelp@nmcourts.gov",
   },
-  // VERIFY: residential rates vary by tax district (in-city vs. unincorporated,
-  // school districts). Placeholder for estimates only.
-  defaultMillRate: 40,
+  // NM DFA TY2025 certificate (latest final rates during the 2026 appeal
+  // season). Default = 48.323 mills for district "12 IN R" (Albuquerque,
+  // in-city residential) — the most common case. Other residential districts:
+  //   38.216  12 OUT R (unincorporated)
+  //   31.696  12 IN LR R (Los Ranchos)
+  //   31.089  12 IN T R (Tijeras)
+  //   27.747  8T R (Rio Rancho)
+  // County residential component is 8.357 mills in most districts (8.416 for
+  // 2A IN R). Rates vary by district + PIDs; operator overrides per case.
+  // Source: nmdfa.state.nm.us .../Bernalillo-County-2025-rev-Sept-19-2025.pdf
+  defaultMillRate: 48.323,
   parcelIdLabel: "UPC (Uniform Parcel Code)",
   forms: {
     agentAuthorizationUrl:
@@ -95,7 +102,11 @@ export const bernalillo: County = {
     },
   ],
   notes:
-    "Notice of Value typically mailed on/before April 1; protest due within 30 days of the mailing date printed on the NOV. " +
-    "Two additional District Court refund forms exist — 'Summons for Property Tax Refund' and 'Request for Interpreter' — " +
-    "but no verified official URLs are available, so they are not linked here (obtain from the Second Judicial District Court or the Assessor).",
+    "NOV mailed on/before April 1; protest due within 30 days (the practical 2026 regular-NOV deadline was May 1, 2026). " +
+    "File with the ASSESSOR, not the Treasurer — no protest filing fee. Channels: online portal (NOV access code), email assessor@bernco.gov, " +
+    "mail to Office of the Assessor, PO Box 27108, Albuquerque, NM 87125, or in person at 415 Silver Ave SW. Protest process: bernco.gov/assessor/protest-process. " +
+    "Assessment math: Assessor sets full value as of Jan 1; NM taxes one-third of it (taxable value); the bill = net taxable value (after exemptions) × the district mill rate. " +
+    "Residential cap (§ 7-36-21.2): value generally can't exceed the higher of 103% of last year's value or 106.1% of the value two years earlier — the cap does NOT apply in the first year valued, after a change of ownership, after a use/zoning change, or for new non-solar improvements. " +
+    "Keep paying the Treasurer while a protest is pending — a protest does not pause payment. No official countywide success rate is published; do not advertise one. " +
+    "Two District Court refund forms ('Summons for Property Tax Refund', 'Request for Interpreter') have no verified public URLs, so they are not linked (obtain from the Second Judicial District Court or the Assessor).",
 };

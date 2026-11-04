@@ -43,14 +43,14 @@ export const EXEMPTIONS: Exemption[] = [
   {
     slug: "veteran",
     label: "Veteran's exemption",
-    taxableReduction: 4000, // VERIFY — increased by recent amendment; confirm current amount
-    note: "Honorably discharged veteran (or surviving spouse). Amount recently changed — verify.",
+    taxableReduction: 10000, // up to $10,000 of taxable value (inflation-adjusting 2026+)
+    note: "Honorably discharged NM veteran (or un-remarried surviving spouse). Up to $10,000 of taxable value; apply via NM Dept. of Veterans Services, then file the certificate with the County Assessor.",
   },
   {
     slug: "disabled_veteran",
     label: "Disabled veteran exemption",
     taxableReduction: "full",
-    note: "Full exemption on the veteran's primary residence (100% service-connected disability).",
+    note: "Exemption equal to the veteran's VA service-connected disability rating on a principal residence (100% rating = full waiver). Via NM Dept. of Veterans Services.",
   },
 ];
 
@@ -63,7 +63,9 @@ export const EXEMPTIONS: Exemption[] = [
 export const VALUATION_FREEZE = {
   slug: "valuation_freeze",
   label: "Valuation freeze (age 65+ or disabled, income-qualified)",
-  note: "Freezes the property's value for a qualifying owner-occupant who is 65 or older (or disabled) and within the income limit. VERIFY current income limit.",
+  /** 2026 tax year modified-gross-income limit (prior year). Inflation-adjusts. */
+  incomeLimit2026: 44200,
+  note: "Freezes the property's value (not the bill) for an owner-occupant of a single-family home who is 65+ or disabled with prior-year modified gross income at or below $44,200 (2026). Apply within 30 days of the NOV; after 3 consecutive qualifying years it applies automatically while eligibility continues.",
 };
 
 function startOfDay(d: Date): Date {

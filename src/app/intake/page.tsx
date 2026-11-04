@@ -334,7 +334,7 @@ export default function IntakePage() {
                   className="field"
                   value={f.upc}
                   onChange={(e) => set("upc", e.target.value)}
-                  placeholder="e.g. 101405123456710230"
+                  placeholder="e.g. 101805915700630404"
                 />
                 <p className="mt-1.5 text-xs text-ink-faint">
                   The Uniform Parcel Code identifies your property on the tax
