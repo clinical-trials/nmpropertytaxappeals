@@ -18,6 +18,15 @@ export const bernalillo: County = {
       "https://assessor.bernco.gov/public.access/search/commonsearch.aspx?mode=realprop",
     appealPortalUrl: "https://www.bernco.gov/assessor/protest-process/",
   },
+  treasurer: {
+    phone: "(505) 468-7031",
+    altPhone: "(505) 462-9768",
+    email: "Treasurers@bernco.gov",
+    hours: "Monday–Friday, 8 a.m. – 5 p.m.",
+    location: "415 Silver Avenue SW, Albuquerque, NM 87102",
+    mailingAddress:
+      "Bernalillo County Treasurer, P.O. Box 27800, Albuquerque, NM 87125-7800",
+  },
   hearingBody: "Bernalillo County Valuation Protests Board",
   protestFilingWindowNote:
     "File within 30 days of the mailing date printed on the Notice of Value.",

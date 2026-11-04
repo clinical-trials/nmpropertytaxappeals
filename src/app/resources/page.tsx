@@ -216,6 +216,26 @@ export default function Resources() {
             A claim for refund can only be filed once the first-half payment is
             paid.
           </p>
+          {bern?.treasurer && (
+            <div className="mt-3 rounded-xl bg-sand-100/70 p-4 text-sm text-ink-soft">
+              <p className="font-medium text-ink">
+                Pay the {bern.name} Treasurer (not the Assessor)
+              </p>
+              <p className="mt-1">
+                {bern.treasurer.email && (
+                  <>
+                    {bern.treasurer.email}
+                    {" · "}
+                  </>
+                )}
+                {bern.treasurer.phone}
+                {bern.treasurer.altPhone ? ` / ${bern.treasurer.altPhone}` : ""}
+              </p>
+              {bern.treasurer.mailingAddress && (
+                <p className="mt-1">{bern.treasurer.mailingAddress}</p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Counties we serve */}

@@ -39,6 +39,15 @@ export type County = {
     /** Online protest / appeal portal. */
     appealPortalUrl?: string;
   };
+  /** County Treasurer — collects payment (distinct from the Assessor/protests). */
+  treasurer?: {
+    phone?: string;
+    altPhone?: string;
+    email?: string;
+    hours?: string;
+    location?: string;
+    mailingAddress?: string;
+  };
   /** Name of the body that hears formal protests. */
   hearingBody?: string;
   /** Plain note on the protest filing window. */
