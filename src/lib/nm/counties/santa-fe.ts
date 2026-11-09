@@ -4,7 +4,9 @@ import { County } from "./types";
 export const santaFe: County = {
   slug: "santa_fe",
   name: "Santa Fe County",
-  supported: true,
+  // Live site is locked to Bernalillo County for now; multi-county code stays
+  // in the repo but Santa Fe is not exposed as selectable on the live site.
+  supported: false,
   assessor: {
     office: "Santa Fe County Assessor",
     address: "240 Grant Avenue, Santa Fe, NM 87501",

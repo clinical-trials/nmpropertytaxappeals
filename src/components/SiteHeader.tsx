@@ -10,7 +10,7 @@ export function SiteHeader({ cta = true }: { cta?: boolean }) {
           NM Tax Appeals
         </span>
         <span className="hidden text-xs text-ink-faint sm:inline">
-          New Mexico
+          Bernalillo County
         </span>
       </Link>
       <nav className="flex items-center gap-4 text-sm sm:gap-5">

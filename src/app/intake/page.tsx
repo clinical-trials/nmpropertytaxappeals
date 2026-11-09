@@ -290,7 +290,7 @@ export default function IntakePage() {
           {step === 0 && (
             <Section
               title="Which property?"
-              hint="We start with Bernalillo County. Other counties are opening soon."
+              hint="Serving Bernalillo County, New Mexico."
             >
               <div>
                 <label className="label">County</label>
@@ -299,20 +299,13 @@ export default function IntakePage() {
                   value={f.countyId}
                   onChange={(e) => set("countyId", e.target.value)}
                 >
-                  {COUNTIES.map((c) => (
+                  {COUNTIES.filter((c) => c.supported).map((c) => (
                     <option key={c.slug} value={c.slug}>
                       {c.name}
-                      {c.supported ? "" : " — coming soon"}
                     </option>
                   ))}
                 </select>
               </div>
-              {!countySupported && (
-                <div className="rounded-xl border border-clay/30 bg-clay/5 p-4 text-sm text-ink-soft">
-                  We&apos;re not live in {county?.name} yet. Leave your email at
-                  the end and we&apos;ll reach out when we open there.
-                </div>
-              )}
               <Text
                 label="Property address"
                 value={f.situsAddress}
